@@ -20,10 +20,8 @@ const List: React.FC = () => {
     const openModal = () => setModalIsOpen(true);
     const closeModal = () => setModalIsOpen(false);
 
-    const deleteItem = (itemId: string) => {
-        const itemIndex = todoList?.items.findIndex((item) => item.id === itemId);
-
-        if (todoList?.items && itemIndex) {
+    const deleteItem = (itemIndex: number) => {
+        if (todoList?.items) {
             const newItemsList = [...todoList?.items.slice(0, itemIndex), ...todoList?.items.slice(itemIndex + 1)];
             const todoListCopy: TodoList = { ...todoList, items: newItemsList };
 
@@ -91,13 +89,13 @@ const List: React.FC = () => {
             <h1>List: {todoList?.name}</h1>
             <ul>
                 {todoList?.items.length ? (
-                    todoList.items.map((item) => (
+                    todoList.items.map((item, index) => (
                         // todo: this should be a separate component
                         <li style={{ marginBottom: '10px' }} onFocus={() => console.log(item.name)} tabIndex={0} key={item.id}>
                             <span style={{ margin: '10px' }}>{item.name}</span>
                             {/* <Button text={`Mark as ${!item.isDone && 'not'} done`} onClick={() => console.log('Done button clicked')} /> */}
                             {/* <Button text="Edit" onClick={() => console.log('Edit button clicked')} /> */}
-                            <Button text="Delete" onClick={() => deleteItem(item.id)} />
+                            <Button text="Delete" onClick={() => deleteItem(index)} />
                         </li>
                     ))
                 ) : (
