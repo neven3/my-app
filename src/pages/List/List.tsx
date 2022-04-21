@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import Modal from 'react-modal';
 
 import { useParams } from 'react-router-dom';
@@ -62,7 +62,7 @@ const List: React.FC = () => {
         }
     }, [todoList, listId]);
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         const todoListsFromMemory: TodoList[] = JSON.parse(localStorage.getItem('todoLists')  || '[]');
     
         if (todoListsFromMemory.length) {
