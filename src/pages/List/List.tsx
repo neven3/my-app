@@ -3,6 +3,7 @@ import Modal from 'react-modal';
 
 import { useParams } from 'react-router-dom';
 
+import Button from '../../components/Button';
 import CreateItemForm from '../../components/CreateItemForm';
 import Layout from '../../components/Layout';
 
@@ -19,6 +20,16 @@ const List: React.FC = () => {
     const openModal = () => setModalIsOpen(true);
     const closeModal = () => setModalIsOpen(false);
 
+    const deleteItem = (itemId: string) => {
+        const itemIndex = todoList?.items.findIndex((item) => item.id === itemId);
+
+        if (todoList?.items && itemIndex) {
+            const newItemsList = [...todoList?.items.slice(0, itemIndex), ...todoList?.items.slice(itemIndex + 1)];
+            const todoListCopy: TodoList = { ...todoList, items: newItemsList };
+
+            setTodoList(todoListCopy);
+        }
+    };
     const createNewItem = (newTodoItem: TodoItem) => {
         setTodoList((prev) => {
             if (prev) {
@@ -81,7 +92,13 @@ const List: React.FC = () => {
             <ul>
                 {todoList?.items.length ? (
                     todoList.items.map((item) => (
-                        <li onFocus={() => console.log(item.name)} tabIndex={0} key={item.id}>{item.name}</li>
+                        // todo: this should be a separate component
+                        <li style={{ marginBottom: '10px' }} onFocus={() => console.log(item.name)} tabIndex={0} key={item.id}>
+                            <span style={{ margin: '10px' }}>{item.name}</span>
+                            {/* <Button text={`Mark as ${!item.isDone && 'not'} done`} onClick={() => console.log('Done button clicked')} /> */}
+                            {/* <Button text="Edit" onClick={() => console.log('Edit button clicked')} /> */}
+                            <Button text="Delete" onClick={() => deleteItem(item.id)} />
+                        </li>
                     ))
                 ) : (
                     <h2>No items yet...</h2>
