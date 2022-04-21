@@ -8,6 +8,10 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
+      <Route path="list">
+        <Route path="" element={<Home />} />
+        <Route path=":listId" element={<List />} />
+      </Route>
       {/* todo: create /deleted and /completed routes */}
       <Route path="deleted" element={<List />} />
       <Route path="completed" element={<List />} />
