@@ -28,6 +28,19 @@ const List: React.FC = () => {
             setTodoList(todoListCopy);
         }
     };
+    const toggleItemIsDone = (itemIndex: number) => {
+        if (todoList?.items) {
+            const itemCopy = { ...todoList.items[itemIndex] };
+
+            itemCopy.isDone = !itemCopy.isDone;
+
+            const newItemsList = [...todoList?.items.slice(0, itemIndex), itemCopy, ...todoList?.items.slice(itemIndex + 1)];
+            const todoListCopy: TodoList = { ...todoList, items: newItemsList };
+
+            setTodoList(todoListCopy);
+        }
+    };
+
     const createNewItem = (newTodoItem: TodoItem) => {
         setTodoList((prev) => {
             if (prev) {
@@ -93,8 +106,9 @@ const List: React.FC = () => {
                         // todo: this should be a separate component
                         <li style={{ marginBottom: '10px' }} onFocus={() => console.log(item.name)} tabIndex={0} key={item.id}>
                             <span style={{ margin: '10px' }}>{item.name}</span>
-                            {/* <Button text={`Mark as ${!item.isDone && 'not'} done`} onClick={() => console.log('Done button clicked')} /> */}
+                            <span style={{ margin: '10px' }}>{item.isDone ? 'Done' : 'Not done'}</span>
                             {/* <Button text="Edit" onClick={() => console.log('Edit button clicked')} /> */}
+                            <Button text={`Mark as ${item.isDone ? 'not' : ''} done`} onClick={() => toggleItemIsDone(index)} />
                             <Button text="Delete" onClick={() => deleteItem(index)} />
                         </li>
                     ))
