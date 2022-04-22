@@ -3,6 +3,7 @@ import Modal from 'react-modal';
 
 import { Link } from 'react-router-dom';
 
+import Button from '../../components/Button';
 import CreateListForm from '../../components/CreateListForm';
 import Layout from '../../components/Layout';
 
@@ -36,6 +37,11 @@ const Home: React.FC = () => {
         setTodoLists((prev) => [...prev, newTodoList ]);
     };
 
+    const deleteList = (listIndex: number) => {
+        const updatedLists = [...todoLists.slice(0, listIndex), ...todoLists.slice(listIndex + 1)];
+
+        setTodoLists(updatedLists);
+    };
     useEffect(() => {
         localStorage.setItem('todoLists', JSON.stringify(todoLists));
     }, [todoLists]);
@@ -47,8 +53,21 @@ const Home: React.FC = () => {
                 {todoLists.map(({name, id}) => (
                     <li tabIndex={0} key={id}>
                         <Link to={`/list/${id}`}>
+                    todoLists.map(({ name, id }, index) => (
+                    <li
+                        style={{ marginBottom: '10px' }}
+                        onFocus={() => console.log(name)}
+                        tabIndex={0}
+                        key={id}
+                    >
+                        <Link to={`/list/${id}`} style={{ margin: '10px' }}>
                             {name}
                         </Link>
+                        {/* <span style={{ margin: '10px' }}>{item.isDone ? 'Done' : 'Not done'}</span> */}
+                        {/* <Button text="Edit" onClick={() => console.log('Edit button clicked')} /> */}
+                        {/* <Button text={`Mark as ${item.isDone ? 'not' : ''} done`} onClick={() => toggleItemIsDone(index)} /> */}
+                        <Button text="Delete" onClick={() => deleteList(index)} />
+
                     </li>
                 ))}
             </ul>
