@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Modal from 'react-modal';
 
 import { Link } from 'react-router-dom';
@@ -21,20 +21,19 @@ export type TodoItem = {
     dueDate?: string;
 };
 
-const todoListsFromMemory: TodoList[] = JSON.parse(localStorage.getItem('todoLists')  || '[]');
-// todo: delete logs
-console.log({ todoListsFromMemory });
-
 const Home: React.FC = () => {
     console.log('Rendering Home')
-    const [todoLists, setTodoLists] = useState<TodoList[]>(todoListsFromMemory);
+    const [todoLists, setTodoLists] = useState<TodoList[]>([]);
     const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
+
+    const isInitialLoad = useRef<boolean>(true);
 
     const openModal = () => setModalIsOpen(true);
     const closeModal = () => setModalIsOpen(false);
 
     const createNewList = (newTodoList: TodoList) => {
         setTodoLists((prev) => [...prev, newTodoList ]);
+        closeModal();
     };
 
     const deleteList = (listIndex: number) => {
@@ -42,17 +41,27 @@ const Home: React.FC = () => {
 
         setTodoLists(updatedLists);
     };
+
+    useLayoutEffect(() => {
+        if (isInitialLoad.current) {
+            const todoListsFromMemory: TodoList[] = JSON.parse(localStorage.getItem('todoLists')  || '[]');
+
+            setTodoLists(todoListsFromMemory);
+            isInitialLoad.current = false;
+        }
+    }, []);
+
     useEffect(() => {
-        localStorage.setItem('todoLists', JSON.stringify(todoLists));
+        if (!isInitialLoad.current) {
+            localStorage.setItem('todoLists', JSON.stringify(todoLists));
+        }
     }, [todoLists]);
 
     return (
         <Layout>
             <h1>All lists:</h1>
             <ul>
-                {todoLists.map(({name, id}) => (
-                    <li tabIndex={0} key={id}>
-                        <Link to={`/list/${id}`}>
+                {todoLists.length ? (
                     todoLists.map(({ name, id }, index) => (
                     <li
                         style={{ marginBottom: '10px' }}
@@ -69,7 +78,10 @@ const Home: React.FC = () => {
                         <Button text="Delete" onClick={() => deleteList(index)} />
 
                     </li>
-                ))}
+                    ))
+                ) : (
+                    <h2>No lists yet...</h2>
+                )}
             </ul>
             <button onClick={openModal}>Open Modal</button>
             <Modal
