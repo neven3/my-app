@@ -32,7 +32,7 @@ const Home: React.FC = () => {
     const closeModal = () => setModalIsOpen(false);
 
     const createNewList = (newTodoList: TodoList) => {
-        setTodoLists((prev) => [...prev, newTodoList ]);
+        setTodoLists((prev) => [...prev, newTodoList]);
         closeModal();
     };
 
@@ -40,6 +40,32 @@ const Home: React.FC = () => {
         const updatedLists = [...todoLists.slice(0, listIndex), ...todoLists.slice(listIndex + 1)];
 
         setTodoLists(updatedLists);
+    };
+
+    const toggleItemsDoneStatus = (listIndex: number) => {
+        const listIsDone = allItemsAreDone(listIndex);
+        const listCopy = { ...todoLists[listIndex] };
+        const listItemsCopy = listCopy.items.map((item) => ({ ...item, isDone: !listIsDone }));
+
+        const updatedLists = [
+            ...todoLists.slice(0, listIndex),
+            { ...listCopy, items: listItemsCopy },
+            ...todoLists.slice(listIndex + 1)
+        ];
+
+        setTodoLists(updatedLists);
+    };
+
+    const getDoneRatio = (listIndex: number) => {
+        const doneItemsCount = todoLists[listIndex].items.filter(item => item.isDone).length;
+
+        return [doneItemsCount, todoLists[listIndex].items.length];
+    };
+
+    const allItemsAreDone = (listIndex: number) => {
+        const [doneCount, allCount] = getDoneRatio(listIndex);
+
+        return doneCount === allCount;
     };
 
     useLayoutEffect(() => {
@@ -73,9 +99,9 @@ const Home: React.FC = () => {
                         <Link to={`/list/${id}`} style={{ margin: '10px' }}>
                             {name}
                         </Link>
-                        {/* <span style={{ margin: '10px' }}>{item.isDone ? 'Done' : 'Not done'}</span> */}
+                        <span style={{ margin: '10px' }}>Done items: {getDoneRatio(index).join('/')}</span>
                         {/* <Button text="Edit" onClick={() => console.log('Edit button clicked')} /> */}
-                        {/* <Button text={`Mark as ${item.isDone ? 'not' : ''} done`} onClick={() => toggleItemIsDone(index)} /> */}
+                        <Button text={`Mark all as ${allItemsAreDone(index) ? 'not' : ''} done`} onClick={() => toggleItemsDoneStatus(index)} />
                         <Button text="Delete" onClick={() => deleteList(index)} />
 
                     </li>
