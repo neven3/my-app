@@ -47,12 +47,13 @@ const Home: React.FC = () => {
             const todoListsFromMemory: TodoList[] = JSON.parse(localStorage.getItem('todoLists')  || '[]');
 
             setTodoLists(todoListsFromMemory);
-            isInitialLoad.current = false;
         }
     }, []);
 
     useEffect(() => {
-        if (!isInitialLoad.current) {
+        if (isInitialLoad.current) {
+            isInitialLoad.current = false;
+        } else {
             localStorage.setItem('todoLists', JSON.stringify(todoLists));
         }
     }, [todoLists]);
