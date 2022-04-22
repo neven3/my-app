@@ -89,7 +89,8 @@ const Home: React.FC = () => {
             <h1>All lists:</h1>
             <ul>
                 {todoLists.length ? (
-                    todoLists.map(({ name, id }, index) => (
+                    todoLists.map(({ name, id, items }, index) => (
+                    // todo: extract into separate component
                     <li
                         style={{ marginBottom: '10px' }}
                         onFocus={() => console.log(name)}
@@ -99,9 +100,13 @@ const Home: React.FC = () => {
                         <Link to={`/list/${id}`} style={{ margin: '10px' }}>
                             {name}
                         </Link>
-                        <span style={{ margin: '10px' }}>Done items: {getDoneRatio(index).join('/')}</span>
+                        {items.length > 0 ? (
+                            <span style={{ margin: '10px' }}>Done items: {getDoneRatio(index).join('/')}</span>
+                        ) : (
+                            <span style={{ margin: '10px' }}>Empty</span>
+                        )}
                         {/* <Button text="Edit" onClick={() => console.log('Edit button clicked')} /> */}
-                        <Button text={`Mark all as ${allItemsAreDone(index) ? 'not' : ''} done`} onClick={() => toggleItemsDoneStatus(index)} />
+                        {items.length > 0 && <Button text={`Mark all as ${allItemsAreDone(index) ? 'not' : ''} done`} onClick={() => toggleItemsDoneStatus(index)} />}
                         <Button text="Delete" onClick={() => deleteList(index)} />
 
                     </li>
@@ -116,7 +121,7 @@ const Home: React.FC = () => {
                 style={{ content: { maxWidth: '500px', margin: 'auto' }}}
             >
                 <CreateListForm onSubmit={createNewList} />
-                <button onClick={closeModal}> X </button>
+                <button onClick={closeModal}>Cancel</button>
             </Modal>
         </Layout>
     );

@@ -161,7 +161,10 @@ const List: React.FC = () => {
             </ul>
             <button onClick={openModal}>Open Modal</button>
             <Modal
+                shouldCloseOnEsc
+                shouldCloseOnOverlayClick
                 isOpen={modalIsOpen}
+                onRequestClose={closeModal}
                 style={{ content: { maxWidth: '500px', margin: 'auto' }}}
             >
                 {
