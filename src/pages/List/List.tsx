@@ -1,10 +1,11 @@
-import React, { useEffect, useLayoutEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Modal from 'react-modal';
 
 import { useParams } from 'react-router-dom';
 
 import Button from '../../components/Button';
 import CreateItemForm from '../../components/CreateItemForm';
+import EditItemForm from '../../components/EditItemForm';
 import Layout from '../../components/Layout';
 
 import { TodoItem, TodoList } from '../Home/Home';
@@ -14,6 +15,9 @@ Modal.setAppElement('#root');
 const List: React.FC = () => {
     const [todoList, setTodoList] = useState<TodoList | null>(null);
     const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
+
+    const shouldDisplayEditForm = useRef<boolean>(false);
+    const itemToEditIndex = useRef<number | null>(null);
 
     const { listId } = useParams();
 
@@ -55,8 +59,33 @@ const List: React.FC = () => {
                 return null;
             }
         });
+    };
 
-        closeModal();
+    const handleEditBtnClick = (itemIndex: number) => {
+        shouldDisplayEditForm.current = true;
+        itemToEditIndex.current = itemIndex;
+        openModal();
+    };
+
+    const saveEditedItem = (editedItem: TodoItem) => {
+        setTodoList((prev) => {
+            if (prev && itemToEditIndex.current !== null) {
+                const editedItemList: TodoItem[] = [
+                    ...prev.items.slice(0, itemToEditIndex.current),
+                    editedItem,
+                    ...prev.items.slice(itemToEditIndex.current + 1),
+                ];
+
+                const listCopy: TodoList = {
+                    ...prev,
+                    items: editedItemList,
+                };
+
+                return listCopy;
+            } else {
+                return null;
+            }
+        });
     };
 
     useEffect(() => {
@@ -71,6 +100,16 @@ const List: React.FC = () => {
                 localStorage.setItem('todoLists', JSON.stringify(todoListsFromMemory));
             }
         }
+
+        if (typeof itemToEditIndex.current === 'number' ) {
+            itemToEditIndex.current = null;
+        }
+
+        if (shouldDisplayEditForm.current) {
+            shouldDisplayEditForm.current = false;
+        }
+
+        closeModal();
     }, [todoList, listId]);
 
     useLayoutEffect(() => {
@@ -107,7 +146,7 @@ const List: React.FC = () => {
                         <li style={{ marginBottom: '10px' }} onFocus={() => console.log(item.name)} tabIndex={0} key={item.id}>
                             <span style={{ margin: '10px' }}>{item.name}</span>
                             <span style={{ margin: '10px' }}>{item.isDone ? 'Done' : 'Not done'}</span>
-                            {/* <Button text="Edit" onClick={() => console.log('Edit button clicked')} /> */}
+                            <Button text="Edit" onClick={() => handleEditBtnClick(index)} />
                             <Button text={`Mark as ${item.isDone ? 'not' : ''} done`} onClick={() => toggleItemIsDone(index)} />
                             <Button text="Delete" onClick={() => deleteItem(index)} />
                         </li>
@@ -121,8 +160,14 @@ const List: React.FC = () => {
                 isOpen={modalIsOpen}
                 style={{ content: { maxWidth: '500px', margin: 'auto' }}}
             >
-                <CreateItemForm onSubmit={createNewItem} />
-                <button onClick={closeModal}> X </button>
+                {
+                    shouldDisplayEditForm.current && todoList && (itemToEditIndex.current !== null) ? (
+                        <EditItemForm onSubmit={saveEditedItem} itemToEdit={todoList?.items[itemToEditIndex.current]} />
+                    ): (
+                        <CreateItemForm onSubmit={createNewItem} />
+                    )
+                }
+                <button onClick={closeModal}>Cancel</button>
             </Modal>
         </Layout>
     );
