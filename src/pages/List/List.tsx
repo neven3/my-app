@@ -101,16 +101,20 @@ const List: React.FC = () => {
             }
         }
 
-        if (typeof itemToEditIndex.current === 'number' ) {
-            itemToEditIndex.current = null;
-        }
-
-        if (shouldDisplayEditForm.current) {
-            shouldDisplayEditForm.current = false;
-        }
-
         closeModal();
     }, [todoList, listId]);
+
+    useEffect(() => {
+        if (!modalIsOpen) {
+            if (typeof itemToEditIndex.current === 'number' ) {
+                itemToEditIndex.current = null;
+            }
+
+            if (shouldDisplayEditForm.current) {
+                shouldDisplayEditForm.current = false;
+            }
+        }
+    }, [modalIsOpen]);
 
     useLayoutEffect(() => {
         const todoListsFromMemory: TodoList[] = JSON.parse(localStorage.getItem('todoLists')  || '[]');
