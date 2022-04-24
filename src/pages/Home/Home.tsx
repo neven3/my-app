@@ -63,7 +63,10 @@ const Home: React.FC = () => {
     };
 
     const deleteList = (listIndex: number) => {
-        const updatedLists = [...todoLists.slice(0, listIndex), ...todoLists.slice(listIndex + 1)];
+        const updatedLists = [
+            ...todoLists.slice(0, listIndex),
+            ...todoLists.slice(listIndex + 1),
+        ];
 
         setTodoLists(updatedLists);
     };
@@ -83,7 +86,7 @@ const Home: React.FC = () => {
     };
 
     const getDoneRatio = (listIndex: number) => {
-        const doneItemsCount = todoLists[listIndex].items.filter(item => item.isDone).length;
+        const doneItemsCount = todoLists[listIndex].items.filter((item) => item.isDone).length;
 
         return [doneItemsCount, todoLists[listIndex].items.length];
     };
@@ -135,7 +138,7 @@ const Home: React.FC = () => {
                     // todo: extract into separate component
                     <li
                         style={{ marginBottom: '10px' }}
-                        onFocus={() => console.log(name)}
+                        onFocus={() => console.log({ name })}
                         tabIndex={0}
                         key={id}
                     >
@@ -161,7 +164,10 @@ const Home: React.FC = () => {
             <button onClick={openModal}>Open Modal</button>
             {/* todo: extract modal into one component for Home.tsx and List.tsx */}
             <Modal
+                shouldCloseOnEsc
+                shouldCloseOnOverlayClick
                 isOpen={modalIsOpen}
+                onRequestClose={closeModal}
                 style={{ content: { maxWidth: '500px', margin: 'auto' }}}
             >
                 {

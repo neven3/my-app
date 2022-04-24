@@ -62,6 +62,7 @@ const List: React.FC = () => {
     };
 
     const handleEditBtnClick = (itemIndex: number) => {
+        // todo: hook 1, extract this into a separate hook (also search for hook 2)
         shouldDisplayEditForm.current = true;
         itemToEditIndex.current = itemIndex;
         openModal();
@@ -106,6 +107,7 @@ const List: React.FC = () => {
 
     useEffect(() => {
         if (!modalIsOpen) {
+            // todo: hook2 extract this into the same hook as hook 1
             if (typeof itemToEditIndex.current === 'number' ) {
                 itemToEditIndex.current = null;
             }
@@ -150,6 +152,7 @@ const List: React.FC = () => {
                         <li style={{ marginBottom: '10px' }} onFocus={() => console.log(item.name)} tabIndex={0} key={item.id}>
                             <span style={{ margin: '10px' }}>{item.name}</span>
                             <span style={{ margin: '10px' }}>{item.isDone ? 'Done' : 'Not done'}</span>
+                            {/* todo: extract these handlers into functions */}
                             <Button text="Edit" onClick={() => handleEditBtnClick(index)} />
                             <Button text={`Mark as ${item.isDone ? 'not' : ''} done`} onClick={() => toggleItemIsDone(index)} />
                             <Button text="Delete" onClick={() => deleteItem(index)} />
