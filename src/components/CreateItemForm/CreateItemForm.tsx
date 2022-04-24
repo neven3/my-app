@@ -11,36 +11,46 @@ interface ICreateItemFormProps {
 
 const CreateItemForm: React.FC<ICreateItemFormProps> = ({ onSubmit }) => {
     const [inputText, setInputText] = useState<string>('');
+    const [isDone, setIsDone] = useState<boolean>(false);
 
     return (
         // todo: create a function for this
         <form onSubmit={(e) => {
-            e.preventDefault();
+                e.preventDefault();
 
-            if (!inputText.length) return;
+                if (!inputText.length) return;
 
-            const newTodoItem: TodoItem = {
-                name: inputText,
-                id: uuidv4(),
-                isDone: false,
-            };
+                const newTodoItem: TodoItem = {
+                    isDone,
+                    name: inputText,
+                    id: uuidv4(),
+                };
 
-            onSubmit(newTodoItem);
-            setInputText('');
-        }}
+                onSubmit(newTodoItem);
+                setInputText('');
+            }}
         >
-        <label htmlFor="todo-item-name">Todo-item name</label>
-        <input
-        // todo: create a function for this
-            onChange={(e) => setInputText(e.target.value)}
-            value={inputText}
-            type="text"
-            name="todo-item-name"
-            id="todo-item-name"
-            placeholder="Enter name here"
-        />
-        <button type="submit">Create item</button>
-      </form>
+            <label htmlFor="todo-item-name">Todo-item name</label>
+            <input
+            // todo: create a function for this
+                onChange={(e) => setInputText(e.target.value)}
+                value={inputText}
+                type="text"
+                name="todo-item-name"
+                id="todo-item-name"
+                placeholder="Enter name here"
+            />
+            <label htmlFor="todo-item-isDone">Mark as done</label>
+            <input
+                type="checkbox"
+                checked={isDone}
+                // todo: create a function for this
+                onChange={(e) => setIsDone(e.target.checked)}
+                name="todo-item-isDone"
+                id="todo-item-isDone"
+            />
+            <button type="submit">Create item</button>
+        </form>
     );
 };
 

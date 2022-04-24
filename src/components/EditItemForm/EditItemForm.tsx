@@ -10,6 +10,7 @@ interface IEditItemFormProps {
 
 const EditItemForm: React.FC<IEditItemFormProps> = ({ onSubmit, itemToEdit }) => {
     const [inputText, setInputText] = useState<string>(itemToEdit.name);
+    const [isDone, setIsDone] = useState<boolean>(itemToEdit.isDone);
 
     return (
         // todo: create a function for this
@@ -20,8 +21,8 @@ const EditItemForm: React.FC<IEditItemFormProps> = ({ onSubmit, itemToEdit }) =>
 
                 const newTodoItem: TodoItem = {
                     ...itemToEdit,
+                    isDone,
                     name: inputText,
-                    // isDone: false,
                 };
 
                 onSubmit(newTodoItem);
@@ -38,8 +39,16 @@ const EditItemForm: React.FC<IEditItemFormProps> = ({ onSubmit, itemToEdit }) =>
                 id="todo-item-name"
                 placeholder="Enter name here"
             />
+            <label htmlFor="todo-item-isDone">Mark as done</label>
+            <input
+                type="checkbox"
+                checked={isDone}
+                onChange={(e) => setIsDone(e.target.checked)}
+                name="todo-item-isDone"
+                id="todo-item-isDone"
+            />
             <button type="submit">Save</button>
-      </form>
+        </form>
     );
 };
 
