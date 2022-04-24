@@ -152,7 +152,11 @@ const Home: React.FC = () => {
                             <span style={{ margin: '10px' }}>Empty</span>
                         )}
                         <Button text="Edit" onClick={() => handleEditBtnClick(index)} />
-                        {items.length > 0 && <Button text={`Mark all as ${allItemsAreDone(index) ? 'not' : ''} done`} onClick={() => toggleItemsDoneStatus(index)} />}
+                        <Button
+                            renderCondition={items.length > 0}
+                            text={`Mark all as ${allItemsAreDone(index) ? 'not' : ''} done`} 
+                            onClick={() => toggleItemsDoneStatus(index)}
+                        />
                         <Button text="Delete" onClick={() => deleteList(index)} />
 
                     </li>
