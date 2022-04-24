@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 
 import Button from '../../components/Button';
 import CreateListForm from '../../components/CreateListForm';
+import EditListForm from '../../components/EditListForm';
 import Layout from '../../components/Layout';
 
 // todo: define these in separate types folder
@@ -25,8 +26,10 @@ const Home: React.FC = () => {
     console.log('Rendering Home')
     const [todoLists, setTodoLists] = useState<TodoList[]>([]);
     const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
-
+    
     const isInitialLoad = useRef<boolean>(true);
+    const shouldDisplayEditForm = useRef<boolean>(false);
+    const listToEditIndex = useRef<number | null>(null);
 
     const openModal = () => setModalIsOpen(true);
     const closeModal = () => setModalIsOpen(false);
@@ -34,6 +37,29 @@ const Home: React.FC = () => {
     const createNewList = (newTodoList: TodoList) => {
         setTodoLists((prev) => [...prev, newTodoList]);
         closeModal();
+    };
+
+    const handleEditBtnClick = (itemIndex: number) => {
+        // todo: hook 1, extract this into a separate hook (also search for hook 2)
+        shouldDisplayEditForm.current = true;
+        listToEditIndex.current = itemIndex;
+        openModal();
+    };
+
+    const saveEditedList = (editedList: TodoList) => {
+        setTodoLists((prev) => {
+            if (listToEditIndex.current !== null) {
+                const editedLists: TodoList[] = [
+                    ...prev.slice(0, listToEditIndex.current),
+                    editedList,
+                    ...prev.slice(listToEditIndex.current + 1),
+                ];
+
+                return editedLists;
+            } else {
+                return todoLists;
+            }
+        });
     };
 
     const deleteList = (listIndex: number) => {
@@ -77,11 +103,27 @@ const Home: React.FC = () => {
     }, []);
 
     useEffect(() => {
+        if (!modalIsOpen) {
+            // todo: hook2 extract this into the same hook as hook 1 (e.g. useEditModal)
+            if (typeof listToEditIndex.current === 'number' ) {
+                listToEditIndex.current = null;
+            }
+
+            if (shouldDisplayEditForm.current) {
+                shouldDisplayEditForm.current = false;
+            }
+        }
+    }, [modalIsOpen]);
+
+    // extract this into separate hook (e.g. useInitialLoad)
+    useEffect(() => {
         if (isInitialLoad.current) {
             isInitialLoad.current = false;
         } else {
             localStorage.setItem('todoLists', JSON.stringify(todoLists));
         }
+
+        closeModal();
     }, [todoLists]);
 
     return (
@@ -100,12 +142,13 @@ const Home: React.FC = () => {
                         <Link to={`/list/${id}`} style={{ margin: '10px' }}>
                             {name}
                         </Link>
+                        {/* todo: change this to a single span with the condition inside text (declare a variable and remove logic from JSX) */}
                         {items.length > 0 ? (
                             <span style={{ margin: '10px' }}>Done items: {getDoneRatio(index).join('/')}</span>
                         ) : (
                             <span style={{ margin: '10px' }}>Empty</span>
                         )}
-                        {/* <Button text="Edit" onClick={() => console.log('Edit button clicked')} /> */}
+                        <Button text="Edit" onClick={() => handleEditBtnClick(index)} />
                         {items.length > 0 && <Button text={`Mark all as ${allItemsAreDone(index) ? 'not' : ''} done`} onClick={() => toggleItemsDoneStatus(index)} />}
                         <Button text="Delete" onClick={() => deleteList(index)} />
 
@@ -116,11 +159,18 @@ const Home: React.FC = () => {
                 )}
             </ul>
             <button onClick={openModal}>Open Modal</button>
+            {/* todo: extract modal into one component for Home.tsx and List.tsx */}
             <Modal
                 isOpen={modalIsOpen}
                 style={{ content: { maxWidth: '500px', margin: 'auto' }}}
             >
-                <CreateListForm onSubmit={createNewList} />
+                {
+                    shouldDisplayEditForm.current && todoLists.length && (listToEditIndex.current !== null) ? (
+                        <EditListForm onSubmit={saveEditedList} listToEdit={todoLists[listToEditIndex.current]} />
+                    ) : (
+                        <CreateListForm onSubmit={createNewList} />
+                    )
+                }
                 <button onClick={closeModal}>Cancel</button>
             </Modal>
         </Layout>
