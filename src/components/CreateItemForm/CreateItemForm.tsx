@@ -2,16 +2,21 @@ import React, { useState } from 'react';
 
 import { v4 as uuidv4 } from 'uuid';
 
-import { TodoItem } from '../../pages/Home/Home';
+import getDateAndTime from '../../utils/getCurrentDateAndTime';
 
+import { TodoItem } from '../../pages/Home/Home';
 
 interface ICreateItemFormProps {
     onSubmit: (value: TodoItem) => void;
 }
 
+// todo: this and EditItemForm should be just one component
+    // accept optional itemToEdit prop and set initial values
+        // also set id if an item doesn't have one
 const CreateItemForm: React.FC<ICreateItemFormProps> = ({ onSubmit }) => {
     const [inputText, setInputText] = useState<string>('');
     const [isDone, setIsDone] = useState<boolean>(false);
+    const [dueDate, setDueDate] = useState<string>('');
 
     return (
         // todo: create a function for this
@@ -21,6 +26,7 @@ const CreateItemForm: React.FC<ICreateItemFormProps> = ({ onSubmit }) => {
                 if (!inputText.length) return;
 
                 const newTodoItem: TodoItem = {
+                    ...(dueDate && { dueDate }),
                     isDone,
                     name: inputText,
                     id: uuidv4(),
@@ -48,6 +54,15 @@ const CreateItemForm: React.FC<ICreateItemFormProps> = ({ onSubmit }) => {
                 onChange={(e) => setIsDone(e.target.checked)}
                 name="todo-item-isDone"
                 id="todo-item-isDone"
+            />
+            <label htmlFor="todo-item-dueDate">Due date and time (optional)</label>
+            <input
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                min={getDateAndTime()}
+                type="datetime-local"
+                name="todo-item-dueDate"
+                id="todo-item-dueDate"
             />
             <button type="submit">Create item</button>
         </form>

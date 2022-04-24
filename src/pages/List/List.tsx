@@ -152,6 +152,8 @@ const List: React.FC = () => {
                         <li style={{ marginBottom: '10px' }} onFocus={() => console.log(item.name)} tabIndex={0} key={item.id}>
                             <span style={{ margin: '10px' }}>{item.name}</span>
                             <span style={{ margin: '10px' }}>{item.isDone ? 'Done' : 'Not done'}</span>
+                            {/* todo: extract this into a function or something */}
+                            {item.dueDate && <span style={{ margin: '10px' }}>Due by: {item.dueDate.replaceAll('-', '/').split('T').join(' at ')}</span>}
                             {/* todo: extract these handlers into functions */}
                             <Button text="Edit" onClick={() => handleEditBtnClick(index)} />
                             <Button text={`Mark as ${item.isDone ? 'not' : ''} done`} onClick={() => toggleItemIsDone(index)} />

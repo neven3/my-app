@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 
-import { TodoItem } from '../../pages/Home/Home';
+import getDateAndTime from '../../utils/getCurrentDateAndTime';
 
+import { TodoItem } from '../../pages/Home/Home';
 
 interface IEditItemFormProps {
     onSubmit: (value: TodoItem) => void;
@@ -11,6 +12,7 @@ interface IEditItemFormProps {
 const EditItemForm: React.FC<IEditItemFormProps> = ({ onSubmit, itemToEdit }) => {
     const [inputText, setInputText] = useState<string>(itemToEdit.name);
     const [isDone, setIsDone] = useState<boolean>(itemToEdit.isDone);
+    const [dueDate, setDueDate] = useState<string>(itemToEdit.dueDate || '');
 
     return (
         // todo: create a function for this
@@ -21,6 +23,7 @@ const EditItemForm: React.FC<IEditItemFormProps> = ({ onSubmit, itemToEdit }) =>
 
                 const newTodoItem: TodoItem = {
                     ...itemToEdit,
+                    ...(dueDate && { dueDate }),
                     isDone,
                     name: inputText,
                 };
@@ -29,9 +32,10 @@ const EditItemForm: React.FC<IEditItemFormProps> = ({ onSubmit, itemToEdit }) =>
                 setInputText('');
             }}
         >
-            <label htmlFor="todo-item-name">Todo-item name</label>
+            <label htmlFor="todo-item-name">Todo-item name*</label>
             <input
             // todo: create a function for this
+                required
                 onChange={(e) => setInputText(e.target.value)}
                 value={inputText}
                 type="text"
@@ -46,6 +50,16 @@ const EditItemForm: React.FC<IEditItemFormProps> = ({ onSubmit, itemToEdit }) =>
                 onChange={(e) => setIsDone(e.target.checked)}
                 name="todo-item-isDone"
                 id="todo-item-isDone"
+            />
+            <label htmlFor="todo-item-dueDate">Due date and time (optional)</label>
+            <input
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                // todo: decide whether to use item.dueDate as min value
+                min={getDateAndTime()}
+                type="datetime-local"
+                name="todo-item-dueDate"
+                id="todo-item-dueDate"
             />
             <button type="submit">Save</button>
         </form>
