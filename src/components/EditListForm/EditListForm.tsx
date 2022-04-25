@@ -38,7 +38,7 @@ const EditListForm: React.FC<IEditListFormProps> = ({ onSubmit, listToEdit }) =>
                 placeholder="Enter name here"
             />
             <button type="submit">Save</button>
-      </form>
+        </form>
     );
 };
 

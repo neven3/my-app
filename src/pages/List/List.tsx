@@ -32,13 +32,19 @@ const List: React.FC = () => {
             setTodoList(todoListCopy);
         }
     };
+
     const toggleItemIsDone = (itemIndex: number) => {
         if (todoList?.items) {
             const itemCopy = { ...todoList.items[itemIndex] };
 
             itemCopy.isDone = !itemCopy.isDone;
 
-            const newItemsList = [...todoList?.items.slice(0, itemIndex), itemCopy, ...todoList?.items.slice(itemIndex + 1)];
+            const newItemsList = [
+                ...todoList?.items.slice(0, itemIndex),
+                itemCopy,
+                ...todoList?.items.slice(itemIndex + 1),
+            ];
+
             const todoListCopy: TodoList = { ...todoList, items: newItemsList };
 
             setTodoList(todoListCopy);
@@ -56,7 +62,7 @@ const List: React.FC = () => {
     
                 return listCopy;
             } else {
-                return null;
+                return prev;
             }
         });
     };
@@ -84,7 +90,7 @@ const List: React.FC = () => {
 
                 return listCopy;
             } else {
-                return null;
+                return prev;
             }
         });
     };

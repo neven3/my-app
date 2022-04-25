@@ -57,7 +57,7 @@ const Home: React.FC = () => {
 
                 return editedLists;
             } else {
-                return todoLists;
+                return prev;
             }
         });
     };
@@ -79,7 +79,7 @@ const Home: React.FC = () => {
         const updatedLists = [
             ...todoLists.slice(0, listIndex),
             { ...listCopy, items: listItemsCopy },
-            ...todoLists.slice(listIndex + 1)
+            ...todoLists.slice(listIndex + 1),
         ];
 
         setTodoLists(updatedLists);
