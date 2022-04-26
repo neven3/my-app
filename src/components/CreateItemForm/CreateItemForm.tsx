@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { FormEventHandler, useState } from 'react';
 
 import { v4 as uuidv4 } from 'uuid';
 
 import getDateAndTime from '../../utils/getCurrentDateAndTime';
 
 import { TodoItem } from '../../pages/Home/Home';
+import { Checkbox, DateTimePicker, TextInput } from '../Inputs';
 
 interface ICreateItemFormProps {
     onSubmit: (value: TodoItem) => void;
@@ -18,53 +19,44 @@ const CreateItemForm: React.FC<ICreateItemFormProps> = ({ onSubmit }) => {
     const [isDone, setIsDone] = useState<boolean>(false);
     const [dueDate, setDueDate] = useState<string>('');
 
+    const handleFormSubmit: FormEventHandler<HTMLFormElement> = (e) => {
+         e.preventDefault();
+
+        if (!inputText.length) return;
+
+        const newTodoItem: TodoItem = {
+            ...(dueDate && { dueDate }),
+            isDone,
+            name: inputText,
+            id: uuidv4(),
+        };
+
+        onSubmit(newTodoItem);
+        setInputText('');
+    };
+
     return (
-        // todo: create a function for this
-        <form onSubmit={(e) => {
-                e.preventDefault();
-
-                if (!inputText.length) return;
-
-                const newTodoItem: TodoItem = {
-                    ...(dueDate && { dueDate }),
-                    isDone,
-                    name: inputText,
-                    id: uuidv4(),
-                };
-
-                onSubmit(newTodoItem);
-                setInputText('');
-            }}
-        >
-            <label htmlFor="todo-item-name">Todo-item name</label>
-            <input
-            // todo: create a function for this
-                onChange={(e) => setInputText(e.target.value)}
-                value={inputText}
-                type="text"
-                name="todo-item-name"
+        <form onSubmit={handleFormSubmit}>
+            <TextInput
                 id="todo-item-name"
+                label="Item name"
+                onChange={(e) => setInputText(e.target.value)}
                 placeholder="Enter name here"
+                value={inputText}
             />
-            <label htmlFor="todo-item-isDone">Mark as done</label>
-            <input
-                type="checkbox"
+            <Checkbox
                 checked={isDone}
-                // todo: create a function for this
                 onChange={(e) => setIsDone(e.target.checked)}
-                name="todo-item-isDone"
+                label="Mark as done"
                 id="todo-item-isDone"
             />
-            <label htmlFor="todo-item-dueDate">Due date and time (optional)</label>
-            <input
+            <DateTimePicker
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
                 min={getDateAndTime()}
-                type="datetime-local"
-                name="todo-item-dueDate"
                 id="todo-item-dueDate"
             />
-            <button type="submit">Create item</button>
+            <button type="submit">Save</button>
         </form>
     );
 };
