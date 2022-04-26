@@ -23,11 +23,13 @@ Modal.setAppElement('#root');
 const List: React.FC = () => {
     const [todoList, setTodoList] = useState<TodoList | null>(null);
     const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
+    const [focusedItemIndex, setFocusedItemIndex] = useState<number| null>(null);
 
     const shouldDisplayEditForm = useRef<boolean>(false);
     const itemToEditIndex = useRef<number | null>(null);
     const isUndoRedoAction = useRef<boolean>(false);
     const lastAction = useRef<Action | null>(null);
+    const metaKeyIsPressed = useRef<boolean>(false);
 
     const { listId } = useParams();
 
@@ -194,19 +196,56 @@ const List: React.FC = () => {
 
     }, [listId, receiver]);
 
-    // todo: keyboard shortcuts
-    // useEffect(() => {
-    //     document.addEventListener('keydown', (e) => {  
+    const handleKeyDown = (e: KeyboardEvent) => {
+        if ((e.metaKey || e.ctrlKey)) {
+            metaKeyIsPressed.current = true;
+
+            if (typeof focusedItemIndex === 'number') {
+                e.preventDefault();
+            }
+        }  
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+        if (metaKeyIsPressed.current) {
+            e.preventDefault();
+            metaKeyIsPressed.current = false;
+
+            if (typeof focusedItemIndex === 'number') {
+                const todoItem = todoList?.items[focusedItemIndex];
+                
+                if (e.code === 'Backspace') {
+                    deleteItem(todoItem!, focusedItemIndex);
+                } else if (e.code === 'KeyE') {
+                    handleEditBtnClick(focusedItemIndex);
+                } else if (e.code === 'KeyF') {
+                    saveEditedItem(
+                        { ...todoItem!, isDone: !todoItem!.isDone},
+                        focusedItemIndex
+                    );
+                }
+            }
             
-    //         console.log({ meta: e.metaKey, ctrl: e.ctrlKey });
-            
-    //         if ((e.metaKey || e.ctrlKey) && e.code === 'Backspace') {
-    //             e.preventDefault();
-    //             console.log('fire!')
-    //             console.log({ meta: e.metaKey, ctrl: e.ctrlKey });
-    //         }  
-    //     });
-    // });
+            if (e.code === 'Enter') {
+                openModal();
+            } else if (e.code === 'KeyZ') {
+                undoRedo.current.undo();
+            } else if (e.code === 'KeyY') {
+                undoRedo.current.redo();
+            }
+        }
+    };
+
+    // todo: this should definitely be a separate hook
+    useEffect(() => {
+        document.addEventListener('keydown', handleKeyDown);
+        document.addEventListener('keyup', handleKeyUp);
+        
+        return (() => {
+            document.removeEventListener('keydown', handleKeyDown);
+            document.removeEventListener('keyup', handleKeyUp);
+        });
+    });
 
     return (
         <Layout>
@@ -233,9 +272,11 @@ const List: React.FC = () => {
                 {todoList?.items.length ? (
                     todoList.items.map((item, index) => (
                         // todo: this should be a separate component
+                            // make this component keep track of its focused state
+                                // in List.tsx create a ref to keep track of focused elements
                         <li
                             style={{ marginBottom: '10px' }}
-                            onFocus={() => console.log(item.name)}
+                            onFocus={() => setFocusedItemIndex(index)}
                             tabIndex={0}
                             key={item.id}
                         >
