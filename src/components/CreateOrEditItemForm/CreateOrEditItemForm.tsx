@@ -9,15 +9,13 @@ import { Checkbox, DateTimePicker, TextInput } from '../Inputs';
 
 interface ICreateItemFormProps {
     onSubmit: (value: TodoItem) => void;
+    itemToEdit?: TodoItem;
 }
 
-// todo: this and EditItemForm should be just one component
-    // accept optional itemToEdit prop and set initial values
-        // also set id if an item doesn't have one
-const CreateItemForm: React.FC<ICreateItemFormProps> = ({ onSubmit }) => {
-    const [inputText, setInputText] = useState<string>('');
-    const [isDone, setIsDone] = useState<boolean>(false);
-    const [dueDate, setDueDate] = useState<string>('');
+const CreateOrEditItemForm: React.FC<ICreateItemFormProps> = ({ onSubmit, itemToEdit = null }) => {
+    const [inputText, setInputText] = useState<string>(itemToEdit?.name || '');
+    const [isDone, setIsDone] = useState<boolean>(itemToEdit?.isDone || false);
+    const [dueDate, setDueDate] = useState<string>(itemToEdit?.dueDate || '');
 
     const handleFormSubmit: FormEventHandler<HTMLFormElement> = (e) => {
          e.preventDefault();
@@ -26,9 +24,9 @@ const CreateItemForm: React.FC<ICreateItemFormProps> = ({ onSubmit }) => {
 
         const newTodoItem: TodoItem = {
             ...(dueDate && { dueDate }),
+            id: itemToEdit?.id || uuidv4(),
             isDone,
             name: inputText,
-            id: uuidv4(),
         };
 
         onSubmit(newTodoItem);
@@ -61,4 +59,4 @@ const CreateItemForm: React.FC<ICreateItemFormProps> = ({ onSubmit }) => {
     );
 };
 
-export default CreateItemForm;
+export default CreateOrEditItemForm;

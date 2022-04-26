@@ -5,8 +5,7 @@ import getStackId from '../../utils/localStorageStackId';
 import { useParams } from 'react-router-dom';
 
 import Button from '../../components/Button';
-import CreateItemForm from '../../components/CreateItemForm';
-import EditItemForm from '../../components/EditItemForm';
+import CreateOrEditItemForm from '../../components/CreateOrEditItemForm';
 import Layout from '../../components/Layout';
 
 import {
@@ -25,7 +24,6 @@ const List: React.FC = () => {
     const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
     const [focusedItemIndex, setFocusedItemIndex] = useState<number| null>(null);
 
-    const shouldDisplayEditForm = useRef<boolean>(false);
     const itemToEditIndex = useRef<number | null>(null);
     const isUndoRedoAction = useRef<boolean>(false);
     const lastAction = useRef<Action | null>(null);
@@ -88,7 +86,6 @@ const List: React.FC = () => {
 
     const handleEditBtnClick = (itemIndex: number) => {
         // todo: hook 1, extract this into a separate hook (also search for hook 2)
-        shouldDisplayEditForm.current = true;
         itemToEditIndex.current = itemIndex;
         openModal();
     };
@@ -171,10 +168,6 @@ const List: React.FC = () => {
             // todo: hook2 extract this into the same hook as hook 1
             if (typeof itemToEditIndex.current === 'number' ) {
                 itemToEditIndex.current = null;
-            }
-
-            if (shouldDisplayEditForm.current) {
-                shouldDisplayEditForm.current = false;
             }
         }
     }, [modalIsOpen]);
@@ -306,10 +299,13 @@ const List: React.FC = () => {
                 style={{ content: { maxWidth: '500px', margin: 'auto' }}}
             >
                 {
-                    shouldDisplayEditForm.current && todoList && (itemToEditIndex.current !== null) ? (
-                        <EditItemForm onSubmit={saveEditedItem} itemToEdit={todoList?.items[itemToEditIndex.current]} />
-                    ): (
-                        <CreateItemForm onSubmit={createNewItem} />
+                    itemToEditIndex.current !== null ? (
+                        <CreateOrEditItemForm
+                            onSubmit={saveEditedItem}
+                            itemToEdit={todoList?.items[itemToEditIndex.current]}
+                        />
+                    ) : (
+                        <CreateOrEditItemForm onSubmit={createNewItem} />
                     )
                 }
                 <button onClick={closeModal}>Cancel</button>
