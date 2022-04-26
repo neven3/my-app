@@ -4,8 +4,7 @@ import Modal from 'react-modal';
 import { Link } from 'react-router-dom';
 
 import Button from '../../components/Button';
-import CreateListForm from '../../components/CreateListForm';
-import EditListForm from '../../components/EditListForm';
+import CreateOrEditListForm from '../../components/CreateOrEditListForm';
 import Layout from '../../components/Layout';
 
 // todo: define these in separate types folder
@@ -176,9 +175,12 @@ const Home: React.FC = () => {
             >
                 {
                     shouldDisplayEditForm.current && todoLists.length && (listToEditIndex.current !== null) ? (
-                        <EditListForm onSubmit={saveEditedList} listToEdit={todoLists[listToEditIndex.current]} />
+                        <CreateOrEditListForm
+                            onSubmit={saveEditedList}
+                            listToEdit={todoLists[listToEditIndex.current]}
+                        />
                     ) : (
-                        <CreateListForm onSubmit={createNewList} />
+                        <CreateOrEditListForm onSubmit={createNewList} />
                     )
                 }
                 <button onClick={closeModal}>Cancel</button>
