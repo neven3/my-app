@@ -29,26 +29,21 @@ export type Action = AddAction | DeleteAction | EditAction;
 
 class Stack {
     public instance: Action[];
-    // private _instance: Action[];
 
     constructor(instance: Action[] = []) {
         this.instance = instance;
-        // this._instance = instance;
     }
 
     public push(action: Action) {
         this.instance.push(action);
-        // this._instance.push(action);
     }
 
     protected pop() {
         return this.instance.pop();
-        // return this._instance.pop();
     }
 
     public get isEmpty() {
         return this.instance.length === 0;
-        // return this._instance.length === 0;
     }
 
     public peek() {
@@ -63,34 +58,83 @@ abstract class Command {
 
 export type TReceiver = Record<EActions, Command>;
 
-export class UndoStack extends Stack {
-    // private _redoStack: Stack;
+class UndoStack extends Stack {
     private _receiver: TReceiver;
 
-    // constructor(redoStack: Stack, receiver: TReceiver) {
     constructor(receiver: TReceiver, stack: Action[] = []) {
         super(stack);
 
-        // this._redoStack = redoStack;
         this._receiver = receiver;
     }
 
     public undo() {
-        console.log('$'.repeat(40))
-        console.log('undoing');
-        console.log({ stack: this.isEmpty });
-
         if (!this.isEmpty) {
             const action = this.pop();
-            console.log({ action });
+
             if (!action) return;
 
             this._receiver[action.type].undo(action);
-
-            // push the action to redo stack
-            // this._redoStack.push(action);
         }
     }
 }
 
-export default Stack;
+// should this and the UndoStack be the same class?
+class RedoStack extends Stack {
+    private _receiver: TReceiver;
+
+    constructor(receiver: TReceiver, stack: Action[] = []) {
+        super(stack);
+
+        this._receiver = receiver;
+    }
+
+    public redo() {
+        if (!this.isEmpty) {
+            const action = this.pop();
+
+            if (!action) return;
+
+            this._receiver[action.type].execute(action);
+        }
+    }
+}
+
+export class UndoRedo {
+    private _undoStack: UndoStack;
+    private _redoStack: RedoStack;
+
+    constructor(receiver: TReceiver, undoStack: Action[] = [], redoStack: Action[] = []) {
+        this._undoStack = new UndoStack(receiver, undoStack);
+        this._redoStack = new RedoStack(receiver, redoStack);
+    }
+
+    public pushNewUndoAction(action: Action) {
+        this._undoStack.push(action);
+    }
+
+    public undo() {
+        const action = this._undoStack.peek();
+
+        if (action) {
+            this._undoStack.undo();
+            this._redoStack.push(action);
+        }
+    }
+
+    public redo() {
+        const action = this._redoStack.peek();
+
+        if (action) {
+            this._redoStack.redo();
+            this._undoStack.push(action);
+        }
+    }
+
+    public get undoStack() {
+        return this._undoStack;
+    }
+
+    public get redoStack() {
+        return this._redoStack;
+    }
+}

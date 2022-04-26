@@ -14,7 +14,7 @@ import {
     EActions,
     EditAction,
     TReceiver,
-    UndoStack
+    UndoRedo,
 } from '../../utils/Stack';
 import { TodoItem, TodoList } from '../Home/Home';
 
@@ -26,7 +26,7 @@ const List: React.FC = () => {
 
     const shouldDisplayEditForm = useRef<boolean>(false);
     const itemToEditIndex = useRef<number | null>(null);
-    const isUndoAction = useRef<boolean>(false);
+    const isUndoRedoAction = useRef<boolean>(false);
     const lastAction = useRef<Action | null>(null);
 
     const { listId } = useParams();
@@ -42,7 +42,7 @@ const List: React.FC = () => {
                     ...prev?.items.slice(itemIndex + 1)
                 ];
 
-                // this probably shouldn't be here, but in an effect hook?
+                // this side-effect probably shouldn't be here, but in an effect hook?
                 lastAction.current = {
                     index: itemIndex,
                     type: EActions.Remove,
@@ -58,29 +58,10 @@ const List: React.FC = () => {
         });
     };
 
-    const toggleItemIsDone = (itemIndex: number) => {
-        if (todoList?.items) {
-            const itemCopy = { ...todoList.items[itemIndex] };
-
-            itemCopy.isDone = !itemCopy.isDone;
-
-            const newItemsList = [
-                ...todoList?.items.slice(0, itemIndex),
-                itemCopy,
-                ...todoList?.items.slice(itemIndex + 1),
-            ];
-
-            const todoListCopy: TodoList = { ...todoList, items: newItemsList };
-
-            setTodoList(todoListCopy);
-        }
-    };
-
     const createNewItem = (newTodoItem: TodoItem, itemIndex: number | null = null) => {
         setTodoList((prev) => {
             if (prev) {
                 const indexToUse = typeof itemIndex === 'number' ? itemIndex : prev.items.length;
-                // const newItemList: TodoItem[] = [...prev?.items, newTodoItem];
                 const newItemList: TodoItem[] = [...prev?.items];
                 newItemList.splice(indexToUse, 0, newTodoItem);
 
@@ -89,7 +70,7 @@ const List: React.FC = () => {
                     items: newItemList,
                 };
 
-                // this probably shouldn't be here, but in an effect hook?
+                // this side-effect probably shouldn't be here, but in an effect hook
                 lastAction.current = {
                     index: prev.items.length,
                     type: EActions.Add,
@@ -112,11 +93,8 @@ const List: React.FC = () => {
 
     const saveEditedItem = (editedItem: TodoItem, index: number | null = null) => {
         setTodoList((prev) => {
-            // const indexToUse = Number((index !== null && String(index)) || itemToEditIndex.current);
             const indexToUse = typeof index === 'number' ? index : itemToEditIndex.current;
-            console.log({indexToUse, editedItem})
             
-            debugger
             if (prev && indexToUse !== null) {
                 const editedItemList: TodoItem[] = [
                     ...prev.items.slice(0, indexToUse),
@@ -153,13 +131,13 @@ const List: React.FC = () => {
             undo: (action) => createNewItem((action.value as TodoItem), action.index),
         },
         [EActions.Edit]: {
-            execute: (action: EditAction) => saveEditedItem((action.previousValue as TodoItem), action.index),
+            execute: (action: EditAction) => saveEditedItem((action.value as TodoItem), action.index),
             undo: (action: EditAction) => saveEditedItem((action.previousValue as TodoItem), action.index),
         },
     }), []);
 
     // todo: maybe change this to use useState hook
-    const undoStack = useRef<UndoStack>(new UndoStack(receiver));
+    const undoRedo = useRef<UndoRedo>(new UndoRedo(receiver));
     
     useEffect(() => {
         const todoListsFromMemory: TodoList[] = JSON.parse(localStorage.getItem('todoLists')  || '[]');
@@ -174,15 +152,14 @@ const List: React.FC = () => {
             }
         }
 
-        console.log('outside', {isUndoAction: isUndoAction.current, lastAction: lastAction.current})
-        if (!isUndoAction.current && lastAction.current) {
-            console.log('inside')
-            undoStack.current.push(lastAction.current);
+        if (!isUndoRedoAction.current && lastAction.current) {
+            undoRedo.current.pushNewUndoAction(lastAction.current);
         }
 
-        if (isUndoAction.current) isUndoAction.current = false;
+        if (isUndoRedoAction.current) isUndoRedoAction.current = false;
 
-        localStorage.setItem(getStackId('undo', listId!), JSON.stringify(undoStack.current.instance));
+        localStorage.setItem(getStackId('undo', listId!), JSON.stringify(undoRedo.current.undoStack.instance));
+        localStorage.setItem(getStackId('redo', listId!), JSON.stringify(undoRedo.current.redoStack.instance));
 
         closeModal();
     }, [todoList, listId]);
@@ -210,8 +187,10 @@ const List: React.FC = () => {
         }
 
         const undoStackFromMemory: Action[] = JSON.parse(localStorage.getItem(getStackId('undo', listId!)) || '[]');
+
+        const redoStackFromMemory: Action[] = JSON.parse(localStorage.getItem(getStackId('redo', listId!)) || '[]');
         
-        undoStack.current = new UndoStack(receiver, undoStackFromMemory);
+        undoRedo.current = new UndoRedo(receiver, undoStackFromMemory, redoStackFromMemory);
 
     }, [listId, receiver]);
 
@@ -233,13 +212,22 @@ const List: React.FC = () => {
         <Layout>
             <h1>List: {todoList?.name}</h1>
             <button
-                disabled={undoStack.current.isEmpty}
+                disabled={undoRedo.current.undoStack.isEmpty}
                 onClick={() => {
-                    isUndoAction.current = true;
-                    undoStack.current.undo();
+                    isUndoRedoAction.current = true;
+                    undoRedo.current.undo();
                 }}
             >
                 Undo
+            </button>
+            <button
+                disabled={undoRedo.current.redoStack.isEmpty}
+                onClick={() => {
+                    isUndoRedoAction.current = true;
+                    undoRedo.current.redo();
+                }}
+            >
+                Redo
             </button>
             <ul>
                 {todoList?.items.length ? (
@@ -259,7 +247,6 @@ const List: React.FC = () => {
                             <Button text="Edit" onClick={() => handleEditBtnClick(index)} />
                             <Button
                                 text={`Mark as ${item.isDone ? 'not' : ''} done`}
-                                // onClick={() => toggleItemIsDone(index)}
                                 onClick={() => saveEditedItem({ ...item, isDone: !item.isDone }, index)}
                             />
                             <Button text="Delete" onClick={() => deleteItem(item, index)} />
