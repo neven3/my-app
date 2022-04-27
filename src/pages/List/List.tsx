@@ -1,5 +1,4 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import getStackId from '../../utils/localStorageStackId';
 
 import { useParams } from 'react-router-dom';
 
@@ -9,6 +8,7 @@ import CreateOrEditItemForm from '../../components/CreateOrEditItemForm';
 import Layout from '../../components/Layout';
 import ListItem from '../../components/ListItem';
 import useKeyboardPress from '../../hooks/useKeyboardPress';
+import getStackId from '../../utils/localStorageStackId';
 
 import {
     Action,

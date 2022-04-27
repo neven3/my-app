@@ -1,6 +1,6 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import Button from '../../components/Button';
 
+import Button from '../../components/Button';
 import CreateOrEditListForm from '../../components/CreateOrEditListForm';
 import Layout from '../../components/Layout';
 import Modal from '../../components/Modal';
@@ -199,7 +199,7 @@ const Home: React.FC = () => {
 
             const undoStackFromMemory: Action[] = JSON.parse(localStorage.getItem(StackName.undo) || '[]');
             const redoStackFromMemory: Action[] = JSON.parse(localStorage.getItem(StackName.redo) || '[]');
-            console.log({ undoStackFromMemory, redoStackFromMemory });
+            
             undoRedo.current = new UndoRedo(receiver, undoStackFromMemory, redoStackFromMemory);
         }
     }, [receiver]);

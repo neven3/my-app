@@ -1,18 +1,27 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 
 import { NavLink } from 'react-router-dom';
 
-const Layout: React.FC<{children: React.ReactNode}> = ({ children }) => {
-    return (
-        <div>
-            <nav>
-                <NavLink to="/">All lists</NavLink>
-                <NavLink to="/completed">Completed items</NavLink>
-                <NavLink to="/deleted">Deleted items</NavLink>
+import './Layout.scss';
+
+interface ILayoutProps {
+    children: ReactNode;
+}
+
+const Layout: React.FC<ILayoutProps> = ({ children }) => (
+    <div className="layout">
+        <header className="header">
+            <h1 className="header__title">To do app</h1>
+            <nav className="header__nav">
+                <NavLink className="header__navlink" to="/">All lists</NavLink>
+                <NavLink className="header__navlink" to="/completed">Completed items</NavLink>
+                <NavLink className="header__navlink" to="/deleted">Deleted items</NavLink>
             </nav>
+        </header>
+        <main className="main">
             {children}
-        </div>
-    );
-};
+        </main>
+    </div>
+);
 
 export default Layout;
