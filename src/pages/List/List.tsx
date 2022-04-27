@@ -63,7 +63,7 @@ const List: React.FC = () => {
         setTodoList((prev) => {
             if (prev) {
                 const indexToUse = typeof itemIndex === 'number' ? itemIndex : prev.items.length;
-                const newItemList: TodoItem[] = [...prev?.items];
+                const newItemList = [...prev?.items];
 
                 newItemList.splice(indexToUse, 0, newTodoItem);
 

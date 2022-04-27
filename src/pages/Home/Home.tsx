@@ -1,11 +1,15 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import Modal from 'react-modal';
-
-import { Link } from 'react-router-dom';
-
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import Button from '../../components/Button';
+
 import CreateOrEditListForm from '../../components/CreateOrEditListForm';
 import Layout from '../../components/Layout';
+import Modal from '../../components/Modal';
+import TodoListComponent from '../../components/TodoList';
+import useKeyboardPress from '../../hooks/useKeyboardPress';
+import getStackId from '../../utils/localStorageStackId';
+
+import { allItemsAreDone } from '../../utils/getTodoListDoneStatus';
+import { Action, EActions, EditAction, TReceiver, UndoRedo } from '../../utils/Stack';
 
 // todo: define these in separate types folder
 export type TodoList = {
@@ -21,39 +25,67 @@ export type TodoItem = {
     dueDate?: string;
 };
 
+enum StackName {
+    undo = 'todoListsUndoStack',
+    redo = 'todoListsRedoStack',
+}
+
 const Home: React.FC = () => {
-    console.log('Rendering Home')
     const [todoLists, setTodoLists] = useState<TodoList[]>([]);
     const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
+    const [focusedListIndex, setFocusedListIndex] = useState<number| null>(null);
+    const [shouldDisplayRedo, setShouldDisplayRedo] = useState<boolean>(false);
     
     const isInitialLoad = useRef<boolean>(true);
-    const shouldDisplayEditForm = useRef<boolean>(false);
     const listToEditIndex = useRef<number | null>(null);
+    const lastAction = useRef<Action | null>(null);
+    const isUndoRedoAction = useRef<boolean>(false);
+    const metaKeyIsPressed = useRef<boolean>(false);
 
     const openModal = () => setModalIsOpen(true);
     const closeModal = () => setModalIsOpen(false);
 
-    const createNewList = (newTodoList: TodoList) => {
-        setTodoLists((prev) => [...prev, newTodoList]);
-        closeModal();
+    const createNewList = (newTodoList: TodoList, listIndex: number | null = null) => {
+        setTodoLists((prev) => {
+            const indexToUse = typeof listIndex === 'number' ? listIndex : prev.length;
+            const newLists = [...prev];
+
+            newLists.splice(indexToUse, 0, newTodoList);
+
+            lastAction.current = {
+                index: prev.length,
+                type: EActions.Add,
+                value: newTodoList,
+            };
+
+            return newLists;
+        });
     };
 
-    const handleEditBtnClick = (itemIndex: number) => {
+    const handleEditBtnClick = (listIndex: number) => {
         // todo: hook 1, extract this into a separate hook (also search for hook 2)
-        shouldDisplayEditForm.current = true;
-        listToEditIndex.current = itemIndex;
+        listToEditIndex.current = listIndex;
         openModal();
     };
 
-    const saveEditedList = (editedList: TodoList) => {
+    const saveEditedList = (editedList: TodoList, index: number | null = null) => {
         setTodoLists((prev) => {
-            if (listToEditIndex.current !== null) {
+            const indexToUse = typeof index === 'number' ? index : listToEditIndex.current;
+
+            if (indexToUse !== null) {
                 const editedLists: TodoList[] = [
-                    ...prev.slice(0, listToEditIndex.current),
+                    ...prev.slice(0, indexToUse),
                     editedList,
-                    ...prev.slice(listToEditIndex.current + 1),
+                    ...prev.slice(indexToUse + 1),
                 ];
 
+                lastAction.current = {
+                    index: indexToUse,
+                    type: EActions.Edit,
+                    value: editedList,
+                    previousValue: prev[indexToUse],
+                };
+            
                 return editedLists;
             } else {
                 return prev;
@@ -61,39 +93,102 @@ const Home: React.FC = () => {
         });
     };
 
-    const deleteList = (listIndex: number) => {
-        const updatedLists = [
-            ...todoLists.slice(0, listIndex),
-            ...todoLists.slice(listIndex + 1),
-        ];
+    const clearListStacks = (id: string) => {
+        localStorage.removeItem(getStackId('undo', id));
+        localStorage.removeItem(getStackId('redo', id));
+    };
 
-        setTodoLists(updatedLists);
+    const deleteList = (list: TodoList, listIndex: number) => {
+        setTodoLists((prev) => {
+            const updatedLists = [
+                ...prev.slice(0, listIndex),
+                ...prev.slice(listIndex + 1),
+            ];
+
+            lastAction.current = {
+                index: listIndex,
+                type: EActions.Remove,
+                value: list,
+            };
+
+            return updatedLists;
+        });
+    };
+
+    const receiver: TReceiver = useMemo(() => ({
+        [EActions.Add]: {
+            execute: (action) => createNewList((action.value as TodoList), action.index),
+            undo: (action) => deleteList((action.value as TodoList), action.index),
+        },
+        [EActions.Remove]: {
+            execute: (action) => deleteList((action.value as TodoList), action.index),
+            undo: (action) => createNewList((action.value as TodoList), action.index),
+        },
+        [EActions.Edit]: {
+            execute: (action: EditAction) => saveEditedList((action.value as TodoList), action.index),
+            undo: (action: EditAction) => saveEditedList((action.previousValue as TodoList), action.index),
+        },
+    }), []);
+
+    const undoRedo = useRef<UndoRedo>(new UndoRedo(receiver));
+    const undoRedoDecorator = (type: 'undo' | 'redo') => {
+        return () => {
+            isUndoRedoAction.current = true;
+            undoRedo.current[type]();
+        };
+    };
+
+    const undo = undoRedoDecorator('undo');
+    const redo = undoRedoDecorator('redo');
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.metaKey || e.ctrlKey) {
+            metaKeyIsPressed.current = true;
+
+            if (typeof focusedListIndex === 'number') {
+                e.preventDefault();
+            }
+        }  
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+        if (metaKeyIsPressed.current) {
+            e.preventDefault();
+            metaKeyIsPressed.current = false;
+
+            if (typeof focusedListIndex === 'number') {
+                const todoList = todoLists[focusedListIndex];
+                
+                if (e.code === 'Backspace') {
+                    deleteList(todoList, focusedListIndex);
+                } else if (e.code === 'KeyE') {
+                    handleEditBtnClick(focusedListIndex);
+                } else if (e.code === 'KeyF') {
+                    toggleItemsDoneStatus(focusedListIndex);
+                }
+            }
+            
+            if (e.code === 'Enter') {
+                openModal();
+            } else if (e.code === 'KeyZ') {
+                undo();
+            } else if (e.code === 'KeyY') {
+                redo();
+            }
+        }
     };
 
     const toggleItemsDoneStatus = (listIndex: number) => {
-        const listIsDone = allItemsAreDone(listIndex);
-        const listCopy = { ...todoLists[listIndex] };
+        const listIsDone = allItemsAreDone(todoLists[listIndex]);
+        const listCopy: TodoList = { ...todoLists[listIndex] };
         const listItemsCopy = listCopy.items.map((item) => ({ ...item, isDone: !listIsDone }));
 
-        const updatedLists = [
-            ...todoLists.slice(0, listIndex),
-            { ...listCopy, items: listItemsCopy },
-            ...todoLists.slice(listIndex + 1),
-        ];
+        const editedList: TodoList = {
+            ...listCopy,
+            items: listItemsCopy,
+        };
 
-        setTodoLists(updatedLists);
-    };
-
-    const getDoneRatio = (listIndex: number) => {
-        const doneItemsCount = todoLists[listIndex].items.filter((item) => item.isDone).length;
-
-        return [doneItemsCount, todoLists[listIndex].items.length];
-    };
-
-    const allItemsAreDone = (listIndex: number) => {
-        const [doneCount, allCount] = getDoneRatio(listIndex);
-
-        return doneCount === allCount;
+        saveEditedList(editedList, listIndex);
     };
 
     useLayoutEffect(() => {
@@ -101,18 +196,19 @@ const Home: React.FC = () => {
             const todoListsFromMemory: TodoList[] = JSON.parse(localStorage.getItem('todoLists')  || '[]');
 
             setTodoLists(todoListsFromMemory);
+
+            const undoStackFromMemory: Action[] = JSON.parse(localStorage.getItem(StackName.undo) || '[]');
+            const redoStackFromMemory: Action[] = JSON.parse(localStorage.getItem(StackName.redo) || '[]');
+            console.log({ undoStackFromMemory, redoStackFromMemory });
+            undoRedo.current = new UndoRedo(receiver, undoStackFromMemory, redoStackFromMemory);
         }
-    }, []);
+    }, [receiver]);
 
     useEffect(() => {
         if (!modalIsOpen) {
             // todo: hook2 extract this into the same hook as hook 1 (e.g. useEditModal)
             if (typeof listToEditIndex.current === 'number' ) {
                 listToEditIndex.current = null;
-            }
-
-            if (shouldDisplayEditForm.current) {
-                shouldDisplayEditForm.current = false;
             }
         }
     }, [modalIsOpen]);
@@ -125,56 +221,62 @@ const Home: React.FC = () => {
             localStorage.setItem('todoLists', JSON.stringify(todoLists));
         }
 
+        if (!isUndoRedoAction.current && lastAction.current) {
+            undoRedo.current.pushNewUndoAction(lastAction.current);
+            undoRedo.current.redoStack.empty();
+        }
+
+        if (lastAction.current?.type === EActions.Remove) {
+            clearListStacks(lastAction.current.value.id);
+        }
+
+        if (isUndoRedoAction.current) isUndoRedoAction.current = false;
+
+        localStorage.setItem(StackName.undo, JSON.stringify(undoRedo.current.undoStack.instance));
+        localStorage.setItem(StackName.redo, JSON.stringify(undoRedo.current.redoStack.instance));
+
+        setShouldDisplayRedo(undoRedo.current.redoStack.isEmpty);
         closeModal();
     }, [todoLists]);
+
+    useKeyboardPress(handleKeyUp, handleKeyDown);
 
     return (
         <Layout>
             <h1>All lists:</h1>
+            <Button
+                text="Undo"
+                disabled={undoRedo.current.undoStack.isEmpty}
+                onClick={undo}
+            />
+            <Button
+                text="Redo"
+                disabled={shouldDisplayRedo}
+                onClick={redo}
+            />
             <ul>
                 {todoLists.length ? (
-                    todoLists.map(({ name, id, items }, index) => (
-                    // todo: extract into separate component
-                    <li
-                        style={{ marginBottom: '10px' }}
-                        onFocus={() => console.log({ name })}
-                        tabIndex={0}
-                        key={id}
-                    >
-                        <Link to={`/list/${id}`} style={{ margin: '10px' }}>
-                            {name}
-                        </Link>
-                        {/* todo: change this to a single span with the condition inside text (declare a variable and remove logic from JSX) */}
-                        {items.length > 0 ? (
-                            <span style={{ margin: '10px' }}>Done items: {getDoneRatio(index).join('/')}</span>
-                        ) : (
-                            <span style={{ margin: '10px' }}>Empty</span>
-                        )}
-                        <Button text="Edit" onClick={() => handleEditBtnClick(index)} />
-                        <Button
-                            renderCondition={items.length > 0}
-                            text={`Mark all as ${allItemsAreDone(index) ? 'not' : ''} done`} 
-                            onClick={() => toggleItemsDoneStatus(index)}
+                    todoLists.map((list, index) => (
+                        <TodoListComponent
+                            list={list}
+                            key={list.id}
+                            onToggleDoneBtnClick={() => toggleItemsDoneStatus(index)}
+                            onDeleteBtnClick={() => deleteList(list, index)}
+                            onEditBtnClick={() => handleEditBtnClick(index)}
+                            onFocus={() => setFocusedListIndex(index)}
                         />
-                        <Button text="Delete" onClick={() => deleteList(index)} />
-
-                    </li>
                     ))
                 ) : (
                     <h2>No lists yet...</h2>
                 )}
             </ul>
-            <button onClick={openModal}>Open Modal</button>
-            {/* todo: extract modal into one component for Home.tsx and List.tsx */}
+            <button onClick={openModal}>Create new</button>
             <Modal
-                shouldCloseOnEsc
-                shouldCloseOnOverlayClick
                 isOpen={modalIsOpen}
-                onRequestClose={closeModal}
-                style={{ content: { maxWidth: '500px', margin: 'auto' }}}
+                close={closeModal}
             >
                 {
-                    shouldDisplayEditForm.current && todoLists.length && (listToEditIndex.current !== null) ? (
+                    listToEditIndex.current !== null ? (
                         <CreateOrEditListForm
                             onSubmit={saveEditedList}
                             listToEdit={todoLists[listToEditIndex.current]}
@@ -183,7 +285,6 @@ const Home: React.FC = () => {
                         <CreateOrEditListForm onSubmit={createNewList} />
                     )
                 }
-                <button onClick={closeModal}>Cancel</button>
             </Modal>
         </Layout>
     );
