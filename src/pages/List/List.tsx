@@ -8,6 +8,7 @@ import Button from '../../components/Button';
 import CreateOrEditItemForm from '../../components/CreateOrEditItemForm';
 import Layout from '../../components/Layout';
 import ListItem from '../../components/ListItem';
+import useKeyboardPress from '../../hooks/useKeyboardPress';
 
 import {
     Action,
@@ -22,6 +23,7 @@ const List: React.FC = () => {
     const [todoList, setTodoList] = useState<TodoList | null>(null);
     const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
     const [focusedItemIndex, setFocusedItemIndex] = useState<number| null>(null);
+    const [shouldDisplayRedo, setShouldDisplayRedo] = useState<boolean>(false);
 
     const itemToEditIndex = useRef<number | null>(null);
     const isUndoRedoAction = useRef<boolean>(false);
@@ -62,6 +64,7 @@ const List: React.FC = () => {
             if (prev) {
                 const indexToUse = typeof itemIndex === 'number' ? itemIndex : prev.items.length;
                 const newItemList: TodoItem[] = [...prev?.items];
+
                 newItemList.splice(indexToUse, 0, newTodoItem);
 
                 const listCopy: TodoList = {
@@ -134,55 +137,16 @@ const List: React.FC = () => {
         },
     }), []);
 
-    // todo: maybe change this to use useState hook
     const undoRedo = useRef<UndoRedo>(new UndoRedo(receiver));
-    
-    useEffect(() => {
-        const todoListsFromMemory: TodoList[] = JSON.parse(localStorage.getItem('todoLists')  || '[]');
+    const undoRedoDecorator = (type: 'undo' | 'redo') => {
+        return () => {
+            isUndoRedoAction.current = true;
+            undoRedo.current[type]();
+        };
+    };
 
-        if (todoListsFromMemory.length) {
-            const currentListIndex = todoListsFromMemory.findIndex((list) => list.id === listId);
-
-            if (currentListIndex !== -1 && todoList) {
-                todoListsFromMemory[currentListIndex] = todoList;
-
-                localStorage.setItem('todoLists', JSON.stringify(todoListsFromMemory));
-            }
-        }
-
-        if (!isUndoRedoAction.current && lastAction.current) {
-            undoRedo.current.pushNewUndoAction(lastAction.current);
-            undoRedo.current.emptyRedo();
-        }
-
-        if (isUndoRedoAction.current) isUndoRedoAction.current = false;
-
-        localStorage.setItem(getStackId('undo', listId!), JSON.stringify(undoRedo.current.undoStack.instance));
-        localStorage.setItem(getStackId('redo', listId!), JSON.stringify(undoRedo.current.redoStack.instance));
-
-        closeModal();
-    }, [todoList, listId]);
-
-    useEffect(() => {
-        if (!modalIsOpen) {
-            // todo: hook2 extract this into the same hook as hook 1
-            if (typeof itemToEditIndex.current === 'number' ) {
-                itemToEditIndex.current = null;
-            }
-        }
-    }, [modalIsOpen]);
-
-    useLayoutEffect(() => {
-        const todoListsFromMemory: TodoList[] = JSON.parse(localStorage.getItem('todoLists')  || '[]');
-        const currentList = todoListsFromMemory.find((list) => list.id === listId);
-
-        if (currentList) setTodoList(currentList);
-
-        const undoStackFromMemory: Action[] = JSON.parse(localStorage.getItem(getStackId('undo', listId!)) || '[]');
-        const redoStackFromMemory: Action[] = JSON.parse(localStorage.getItem(getStackId('redo', listId!)) || '[]');
-        
-        undoRedo.current = new UndoRedo(receiver, undoStackFromMemory, redoStackFromMemory);
-    }, [listId, receiver]);
+    const undo = undoRedoDecorator('undo');
+    const redo = undoRedoDecorator('redo');
 
     const handleKeyDown = (e: KeyboardEvent) => {
         if (e.metaKey || e.ctrlKey) {
@@ -217,30 +181,63 @@ const List: React.FC = () => {
             if (e.code === 'Enter') {
                 openModal();
             } else if (e.code === 'KeyZ') {
-                undoRedo.current.undo();
+                undo();
             } else if (e.code === 'KeyY') {
-                undoRedo.current.redo();
+                redo();
             }
         }
     };
 
-    // todo: this should definitely be a separate hook
     useEffect(() => {
-        document.addEventListener('keydown', handleKeyDown);
-        document.addEventListener('keyup', handleKeyUp);
-        
-        return (() => {
-            document.removeEventListener('keydown', handleKeyDown);
-            document.removeEventListener('keyup', handleKeyUp);
-        });
-    });
+        // on every change of todoList state, save the change for that list to localStorage
+        const todoListsFromMemory: TodoList[] = JSON.parse(localStorage.getItem('todoLists')  || '[]');
 
-    const undoRedoHandler = (type: 'undo' | 'redo') => {
-        return () => {
-            isUndoRedoAction.current = true;
-            undoRedo.current[type]();
-        };
-    };
+        if (todoListsFromMemory.length) {
+            const currentListIndex = todoListsFromMemory.findIndex((list) => list.id === listId);
+
+            if (currentListIndex !== -1 && todoList) {
+                todoListsFromMemory[currentListIndex] = todoList;
+
+                localStorage.setItem('todoLists', JSON.stringify(todoListsFromMemory));
+            }
+        }
+
+        if (!isUndoRedoAction.current && lastAction.current) {
+            undoRedo.current.pushNewUndoAction(lastAction.current);
+            undoRedo.current.redoStack.empty();
+        }
+
+        if (isUndoRedoAction.current) isUndoRedoAction.current = false;
+
+        localStorage.setItem(getStackId('undo', listId!), JSON.stringify(undoRedo.current.undoStack.instance));
+        localStorage.setItem(getStackId('redo', listId!), JSON.stringify(undoRedo.current.redoStack.instance));
+
+        setShouldDisplayRedo(undoRedo.current.redoStack.isEmpty);
+        closeModal();
+    }, [todoList, listId]);
+
+    useEffect(() => {
+        if (!modalIsOpen) {
+            // todo: hook2 extract this into the same hook as hook 1
+            if (typeof itemToEditIndex.current === 'number' ) {
+                itemToEditIndex.current = null;
+            }
+        }
+    }, [modalIsOpen]);
+
+    useLayoutEffect(() => {
+        const todoListsFromMemory: TodoList[] = JSON.parse(localStorage.getItem('todoLists')  || '[]');
+        const currentList = todoListsFromMemory.find((list) => list.id === listId);
+
+        if (currentList) setTodoList(currentList);
+
+        const undoStackFromMemory: Action[] = JSON.parse(localStorage.getItem(getStackId('undo', listId!)) || '[]');
+        const redoStackFromMemory: Action[] = JSON.parse(localStorage.getItem(getStackId('redo', listId!)) || '[]');
+        
+        undoRedo.current = new UndoRedo(receiver, undoStackFromMemory, redoStackFromMemory);
+    }, [listId, receiver]);
+
+    useKeyboardPress(handleKeyUp, handleKeyDown);
 
     return (
         <Layout>
@@ -248,12 +245,12 @@ const List: React.FC = () => {
             <Button
                 text="Undo"
                 disabled={undoRedo.current.undoStack.isEmpty}
-                onClick={undoRedoHandler('undo')}
+                onClick={undo}
             />
             <Button
                 text="Redo"
-                disabled={undoRedo.current.redoStack.isEmpty}
-                onClick={undoRedoHandler('redo')}
+                disabled={shouldDisplayRedo}
+                onClick={redo}
             />
             <ul>
                 {todoList?.items.length ? (

@@ -49,6 +49,8 @@ class Stack {
     public peek() {
         return this.instance.at(-1);
     }
+
+
 }
 
 abstract class Command {
@@ -74,6 +76,12 @@ class UndoStack extends Stack {
             if (!action) return;
 
             this._receiver[action.type].undo(action);
+        }
+    }
+
+    public empty() {
+        if (!this.isEmpty) {
+            this.instance = [];
         }
     }
 }
@@ -139,9 +147,5 @@ export class UndoRedo {
             this._redoStack.redo();
             this._undoStack.push(action);
         }
-    }
-
-    public emptyRedo() {
-        this._redoStack.empty();
     }
 }
