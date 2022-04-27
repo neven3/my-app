@@ -1,16 +1,22 @@
-import React from 'react';
+import React, { MouseEventHandler } from 'react';
 
 interface IButtonProps {
     text: string;
-    onClick: () => void;
+    onClick: MouseEventHandler<HTMLButtonElement>;
     renderCondition?: boolean;
+    disabled?: boolean;
 }
 
-const Button: React.FC<IButtonProps> = ({ text, onClick, renderCondition = true }) => {
+const Button: React.FC<IButtonProps> = ({
+    text,
+    onClick,
+    disabled = false,
+    renderCondition = true
+}) => {
     if (!renderCondition) return null;
 
     return (
-        <button onClick={onClick}>
+        <button disabled={disabled} onClick={onClick}>
             {text}
         </button>
     );

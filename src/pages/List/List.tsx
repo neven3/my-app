@@ -1,12 +1,13 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import Modal from 'react-modal';
 import getStackId from '../../utils/localStorageStackId';
 
 import { useParams } from 'react-router-dom';
 
+import Modal from '../../components/Modal';
 import Button from '../../components/Button';
 import CreateOrEditItemForm from '../../components/CreateOrEditItemForm';
 import Layout from '../../components/Layout';
+import ListItem from '../../components/ListItem';
 
 import {
     Action,
@@ -16,8 +17,6 @@ import {
     UndoRedo,
 } from '../../utils/Stack';
 import { TodoItem, TodoList } from '../Home/Home';
-
-Modal.setAppElement('#root');
 
 const List: React.FC = () => {
     const [todoList, setTodoList] = useState<TodoList | null>(null);
@@ -174,23 +173,18 @@ const List: React.FC = () => {
 
     useLayoutEffect(() => {
         const todoListsFromMemory: TodoList[] = JSON.parse(localStorage.getItem('todoLists')  || '[]');
-    
-        if (todoListsFromMemory.length) {
-            const currentList = todoListsFromMemory.find((list) => list.id === listId);
+        const currentList = todoListsFromMemory.find((list) => list.id === listId);
 
-            if (currentList) setTodoList(currentList);
-        }
+        if (currentList) setTodoList(currentList);
 
         const undoStackFromMemory: Action[] = JSON.parse(localStorage.getItem(getStackId('undo', listId!)) || '[]');
-
         const redoStackFromMemory: Action[] = JSON.parse(localStorage.getItem(getStackId('redo', listId!)) || '[]');
         
         undoRedo.current = new UndoRedo(receiver, undoStackFromMemory, redoStackFromMemory);
-
     }, [listId, receiver]);
 
     const handleKeyDown = (e: KeyboardEvent) => {
-        if ((e.metaKey || e.ctrlKey)) {
+        if (e.metaKey || e.ctrlKey) {
             metaKeyIsPressed.current = true;
 
             if (typeof focusedItemIndex === 'number') {
@@ -264,39 +258,23 @@ const List: React.FC = () => {
             <ul>
                 {todoList?.items.length ? (
                     todoList.items.map((item, index) => (
-                        // todo: this should be a separate component
-                            // make this component keep track of its focused state
-                                // in List.tsx create a ref to keep track of focused elements
-                        <li
-                            style={{ marginBottom: '10px' }}
-                            onFocus={() => setFocusedItemIndex(index)}
-                            tabIndex={0}
+                        <ListItem
                             key={item.id}
-                        >
-                            <span style={{ margin: '10px' }}>{item.name}</span>
-                            <span style={{ margin: '10px' }}>{item.isDone ? 'Done' : 'Not done'}</span>
-                            {/* todo: extract this into a function or something */}
-                            {item.dueDate && <span style={{ margin: '10px' }}>Due by: {item.dueDate.replaceAll('-', '/').split('T').join(' at ')}</span>}
-                            {/* todo: extract these handlers into functions */}
-                            <Button text="Edit" onClick={() => handleEditBtnClick(index)} />
-                            <Button
-                                text={`Mark as ${item.isDone ? 'not' : ''} done`}
-                                onClick={() => saveEditedItem({ ...item, isDone: !item.isDone }, index)}
-                            />
-                            <Button text="Delete" onClick={() => deleteItem(item, index)} />
-                        </li>
+                            item={item}
+                            onFocus={() => setFocusedItemIndex(index)}
+                            onDeleteBtnClick={() => deleteItem(item, index)}
+                            onEditBtnClick={() => handleEditBtnClick(index)}
+                            onToggleDoneBtnClick={() => saveEditedItem({ ...item, isDone: !item.isDone}, index)}
+                        />
                     ))
                 ) : (
                     <h2>No items yet...</h2>
                 )}
             </ul>
-            <button onClick={openModal}>Open Modal</button>
+            <button onClick={openModal}>Create new</button>
             <Modal
-                shouldCloseOnEsc
-                shouldCloseOnOverlayClick
                 isOpen={modalIsOpen}
-                onRequestClose={closeModal}
-                style={{ content: { maxWidth: '500px', margin: 'auto' }}}
+                close={closeModal}
             >
                 {
                     itemToEditIndex.current !== null ? (
@@ -308,7 +286,6 @@ const List: React.FC = () => {
                         <CreateOrEditItemForm onSubmit={createNewItem} />
                     )
                 }
-                <button onClick={closeModal}>Cancel</button>
             </Modal>
         </Layout>
     );
