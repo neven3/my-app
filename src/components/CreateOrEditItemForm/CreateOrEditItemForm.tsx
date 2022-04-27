@@ -7,12 +7,12 @@ import getDateAndTime from '../../utils/getCurrentDateAndTime';
 import { TodoItem } from '../../pages/Home/Home';
 import { Checkbox, DateTimePicker, TextInput } from '../Inputs';
 
-interface ICreateItemFormProps {
+interface ICreateOrEditItemFormProps {
     onSubmit: (value: TodoItem) => void;
     itemToEdit?: TodoItem;
 }
 
-const CreateOrEditItemForm: React.FC<ICreateItemFormProps> = ({ onSubmit, itemToEdit = null }) => {
+const CreateOrEditItemForm: React.FC<ICreateOrEditItemFormProps> = ({ onSubmit, itemToEdit = null }) => {
     const [inputText, setInputText] = useState<string>(itemToEdit?.name || '');
     const [isDone, setIsDone] = useState<boolean>(itemToEdit?.isDone || false);
     const [dueDate, setDueDate] = useState<string>(itemToEdit?.dueDate || '');

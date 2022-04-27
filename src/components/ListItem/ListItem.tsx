@@ -1,6 +1,7 @@
 import React, { FocusEventHandler, MouseEventHandler} from 'react';
 
 import Button from '../Button';
+import readableDateTime from '../../utils/readableDateTime';
 
 import { TodoItem } from '../../pages/Home/Home';
 
@@ -11,8 +12,6 @@ interface IListItemProps {
     onDeleteBtnClick: MouseEventHandler<HTMLButtonElement>;
     onFocus: FocusEventHandler<HTMLLIElement>;
 }
-
-const formatDateTime = (date: string) => date.replaceAll('-', '/').split('T').join(' at ');
 
 const ListItem: React.FC<IListItemProps> = ({
     item,
@@ -29,7 +28,7 @@ const ListItem: React.FC<IListItemProps> = ({
         >
             <span style={{ margin: '10px' }}>{item.name}</span>
             <span style={{ margin: '10px' }}>{item.isDone ? 'Done' : 'Not done'}</span>
-            {item.dueDate && <span style={{ margin: '10px' }}>Due by: {formatDateTime(item.dueDate)}</span>}
+            {item.dueDate && <span style={{ margin: '10px' }}>Due by: {readableDateTime(item.dueDate)}</span>}
             <Button text="Edit" onClick={onEditBtnClick} />
             <Button
                 text={`Mark as ${item.isDone ? 'not' : ''} done`}

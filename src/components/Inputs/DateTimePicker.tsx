@@ -20,7 +20,7 @@ const DateTimePicker: React.FC<IDateTimePickerProps> = ({
         <input
             value={value}
             onChange={onChange}
-            { ...{ min }}
+            { ...{ min } }
             type="datetime-local"
             name={id}
             id={id}

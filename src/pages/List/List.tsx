@@ -38,7 +38,7 @@ const List: React.FC = () => {
             if (prev) {
                 const newItemsList: TodoItem[] = [
                     ...prev?.items.slice(0, itemIndex),
-                    ...prev?.items.slice(itemIndex + 1)
+                    ...prev?.items.slice(itemIndex + 1),
                 ];
 
                 // this side-effect probably shouldn't be here, but in an effect hook?
@@ -208,7 +208,7 @@ const List: React.FC = () => {
                     handleEditBtnClick(focusedItemIndex);
                 } else if (e.code === 'KeyF') {
                     saveEditedItem(
-                        { ...todoItem!, isDone: !todoItem!.isDone},
+                        { ...todoItem!, isDone: !todoItem!.isDone },
                         focusedItemIndex
                     );
                 }
