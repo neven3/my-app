@@ -152,6 +152,7 @@ const List: React.FC = () => {
 
         if (!isUndoRedoAction.current && lastAction.current) {
             undoRedo.current.pushNewUndoAction(lastAction.current);
+            undoRedo.current.emptyRedo();
         }
 
         if (isUndoRedoAction.current) isUndoRedoAction.current = false;
@@ -234,27 +235,26 @@ const List: React.FC = () => {
         });
     });
 
+    const undoRedoHandler = (type: 'undo' | 'redo') => {
+        return () => {
+            isUndoRedoAction.current = true;
+            undoRedo.current[type]();
+        };
+    };
+
     return (
         <Layout>
             <h1>List: {todoList?.name}</h1>
-            <button
+            <Button
+                text="Undo"
                 disabled={undoRedo.current.undoStack.isEmpty}
-                onClick={() => {
-                    isUndoRedoAction.current = true;
-                    undoRedo.current.undo();
-                }}
-            >
-                Undo
-            </button>
-            <button
+                onClick={undoRedoHandler('undo')}
+            />
+            <Button
+                text="Redo"
                 disabled={undoRedo.current.redoStack.isEmpty}
-                onClick={() => {
-                    isUndoRedoAction.current = true;
-                    undoRedo.current.redo();
-                }}
-            >
-                Redo
-            </button>
+                onClick={undoRedoHandler('redo')}
+            />
             <ul>
                 {todoList?.items.length ? (
                     todoList.items.map((item, index) => (

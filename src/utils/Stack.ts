@@ -78,7 +78,6 @@ class UndoStack extends Stack {
     }
 }
 
-// should this and the UndoStack be the same class?
 class RedoStack extends Stack {
     private _receiver: TReceiver;
 
@@ -97,6 +96,10 @@ class RedoStack extends Stack {
             this._receiver[action.type].execute(action);
         }
     }
+
+    public empty() {
+        this.instance = [];
+    }
 }
 
 export class UndoRedo {
@@ -106,6 +109,14 @@ export class UndoRedo {
     constructor(receiver: TReceiver, undoStack: Action[] = [], redoStack: Action[] = []) {
         this._undoStack = new UndoStack(receiver, undoStack);
         this._redoStack = new RedoStack(receiver, redoStack);
+    }
+
+    public get undoStack() {
+        return this._undoStack;
+    }
+
+    public get redoStack() {
+        return this._redoStack;
     }
 
     public pushNewUndoAction(action: Action) {
@@ -130,11 +141,7 @@ export class UndoRedo {
         }
     }
 
-    public get undoStack() {
-        return this._undoStack;
-    }
-
-    public get redoStack() {
-        return this._redoStack;
+    public emptyRedo() {
+        this._redoStack.empty();
     }
 }
