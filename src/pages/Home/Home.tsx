@@ -11,6 +11,8 @@ import getStackId from '../../utils/localStorageStackId';
 import { allItemsAreDone } from '../../utils/getTodoListDoneStatus';
 import { Action, EActions, EditAction, TReceiver, UndoRedo } from '../../utils/Stack';
 
+import './Home.scss';
+
 // todo: define these in separate types folder
 export type TodoList = {
     name: string;
@@ -243,34 +245,61 @@ const Home: React.FC = () => {
 
     return (
         <Layout>
-            <h1>All lists:</h1>
-            <Button
-                text="Undo"
-                disabled={undoRedo.current.undoStack.isEmpty}
-                onClick={undo}
-            />
-            <Button
-                text="Redo"
-                disabled={shouldDisplayRedo}
-                onClick={redo}
-            />
-            <ul>
-                {todoLists.length ? (
-                    todoLists.map((list, index) => (
-                        <TodoListComponent
-                            list={list}
-                            key={list.id}
-                            onToggleDoneBtnClick={() => toggleItemsDoneStatus(index)}
-                            onDeleteBtnClick={() => deleteList(list, index)}
-                            onEditBtnClick={() => handleEditBtnClick(index)}
-                            onFocus={() => setFocusedListIndex(index)}
+            <div className="list-container">
+                <div className="list-container__header">
+                    <h2 className="list-container__title">All lists</h2>
+                    <div className="btn-group">
+                        <Button
+                            text="Undo"
+                            className="list-container__btn--undo-redo"
+                            disabled={undoRedo.current.undoStack.isEmpty}
+                            onClick={undo}
                         />
-                    ))
-                ) : (
-                    <h2>No lists yet...</h2>
+                        <Button
+                            text="Redo"
+                            className="list-container__btn--undo-redo"
+                            disabled={shouldDisplayRedo}
+                            onClick={redo}
+                        />
+                    </div>
+                </div>
+                <div className="list-container__body">
+                    <ul>
+                        {todoLists.length ? (
+                            todoLists.map((list, index) => (
+                                <TodoListComponent
+                                    list={list}
+                                    key={list.id}
+                                    onToggleDoneBtnClick={() => toggleItemsDoneStatus(index)}
+                                    onDeleteBtnClick={() => deleteList(list, index)}
+                                    onEditBtnClick={() => handleEditBtnClick(index)}
+                                    onFocus={() => setFocusedListIndex(index)}
+                                />
+                            ))
+                        ) : (
+                            <div className="empty-state-container">
+                                <h3 className="empty-state-container__title">
+                                    Add a list to get started
+                                </h3>
+                                <button
+                                    className="empty-state-container__btn"
+                                    onClick={openModal}
+                                >
+                                    Create new
+                                </button>
+                            </div>
+                        )}
+                    </ul>
+                </div>
+                {Boolean(todoLists.length) && (
+                    <button
+                        className="list-container__btn--open-modal"
+                        onClick={openModal}
+                    >
+                        Create new
+                    </button>
                 )}
-            </ul>
-            <button onClick={openModal}>Create new</button>
+            </div>
             <Modal
                 isOpen={modalIsOpen}
                 close={closeModal}

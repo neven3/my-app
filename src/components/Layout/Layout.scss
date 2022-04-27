@@ -1,7 +1,9 @@
 $default-font-family: Roboto, sans-serif;
+$active-link-color: #3e7af1;
+$hover-link-color: #739df1;
 
 body {
-    background-color: #E5E5E5;
+    background-color: white;
 }
 
 .layout {
@@ -30,6 +32,17 @@ body {
             margin: 12px;
             line-height: 26px;
             color: #5C5C5C;
+            cursor: pointer;
+            text-decoration: none;
+
+            &.active {
+                color: $active-link-color;
+            }
+
+            &:hover {
+                color: $hover-link-color;
+                text-decoration: underline;
+            }
         }
     }
 

@@ -1,0 +1,21 @@
+.form {
+    margin: 60px 0 20px;
+    width: 80%;
+    position: relative;
+
+    &__submit-btn {
+        text-align: center;
+        font-family: Roboto, sans-serif;
+        padding: 12px;
+        background-color: #79A5FA;
+        width: fit-content;
+        border-radius: 10px;
+        cursor: pointer;
+        color: white;
+        margin: 12px 0;
+
+        &:hover {
+            background-color: #adc6f7;
+        }
+    }
+}

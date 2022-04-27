@@ -1,0 +1,43 @@
+label {
+    font-family: Roboto, sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 24px;
+    line-height: 28px;
+    color: #5C5C5C;
+    display: block;
+    margin-bottom: 15px;
+}
+
+.label {
+    &--checkbox {
+        display: inline;
+        margin: 12px 0;
+    }
+}
+
+.input {
+    font-family: Roboto, sans-serif;
+    font-weight: 400;
+    font-size: 18px;
+    line-height: 21px;
+    background-color: white;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 24px;
+
+    &--datepicker,
+    &--text {
+        width: 100%;
+    }
+
+    &--checkbox {
+        margin-left: 24px;
+        height: 24px;
+        width: 24px;
+    }
+
+    &::placeholder {
+        color: #D3D3D3;
+    }
+}

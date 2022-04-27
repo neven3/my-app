@@ -1,6 +1,10 @@
 import React, { ReactNode } from 'react';
 import ReactModal from 'react-modal';
 
+import Button from '../Button';
+
+import './Modal.scss';
+
 interface IModalProps {
     isOpen: boolean;
     close: () => void;
@@ -14,11 +18,17 @@ const Modal: React.FC<IModalProps> = ({ isOpen, close, children }) => (
         shouldCloseOnEsc
         shouldCloseOnOverlayClick
         isOpen={isOpen}
+        className="modal"
         onRequestClose={close}
-        style={{ content: { maxWidth: '500px', margin: 'auto' }}}
     >
-        {children}
-        <button onClick={close}>Cancel</button>
+        <div className="modal__content">
+            {children}
+        </div>
+        <Button
+            onClick={close}
+            text="Close"
+            className="modal__btn"
+        />
     </ReactModal>
 );
 

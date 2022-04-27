@@ -5,6 +5,7 @@ interface ICheckboxProps {
     checked: boolean;
     onChange: ChangeEventHandler<HTMLInputElement>;
     label?: string;
+    required?: boolean;
 }
 
 const Checkbox: React.FC<ICheckboxProps> = ({
@@ -12,10 +13,13 @@ const Checkbox: React.FC<ICheckboxProps> = ({
     checked,
     onChange,
     label = '',
+    required = false,
 }) => (
     <>
-        <label htmlFor={id}>{label}</label>
+        <label className="label--checkbox" htmlFor={id}>{label}</label>
         <input
+            required={required}
+            className="input input--checkbox"
             type="checkbox"
             checked={checked}
             onChange={onChange}

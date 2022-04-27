@@ -7,6 +7,8 @@ import getDateAndTime from '../../utils/getCurrentDateAndTime';
 import { TodoItem } from '../../pages/Home/Home';
 import { Checkbox, DateTimePicker, TextInput } from '../Inputs';
 
+import './CreateOrEditItemForm.scss';
+
 interface ICreateOrEditItemFormProps {
     onSubmit: (value: TodoItem) => void;
     itemToEdit?: TodoItem;
@@ -34,8 +36,9 @@ const CreateOrEditItemForm: React.FC<ICreateOrEditItemFormProps> = ({ onSubmit, 
     };
 
     return (
-        <form onSubmit={handleFormSubmit}>
+        <form onSubmit={handleFormSubmit} className="form">
             <TextInput
+                required
                 id="todo-item-name"
                 label="Item name"
                 onChange={(e) => setInputText(e.target.value)}
@@ -49,12 +52,13 @@ const CreateOrEditItemForm: React.FC<ICreateOrEditItemFormProps> = ({ onSubmit, 
                 id="todo-item-isDone"
             />
             <DateTimePicker
+                label="Due by"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
                 min={getDateAndTime()}
                 id="todo-item-dueDate"
             />
-            <button type="submit">Save</button>
+            <button type="submit" className="form__submit-btn">Save</button>
         </form>
     );
 };

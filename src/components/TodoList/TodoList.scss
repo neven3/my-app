@@ -1,0 +1,53 @@
+$default-font-family: Roboto, sans-serif;
+$active-link-color: #3e7af1;
+$hover-link-color: #739df1;
+
+.todo-item {
+    &--lists {
+        padding: 30px 0;
+        border-bottom: 1px solid #EDEDED;
+    }
+
+    &__link {
+        font-family: Roboto, sans-serif;
+        font-weight: 700;
+        font-size: 24px;
+        line-height: 28px;
+        color: #0F0F0F;
+        margin-right: 42px;
+        cursor: pointer;
+
+        &:hover {
+            color: #739df1;
+            text-decoration: underline;
+        }
+    }
+
+    &__text {
+        font-family: Roboto, sans-serif;
+        font-weight: 400;
+        font-size: 20px;
+        line-height: 22px;
+        color: #5C5C5C;
+    }
+
+    &__btn-group {
+        float: right;
+    }
+
+    &__btn {
+        margin: 0 18px;
+        font-family: Roboto, sans-serif;
+        font-weight: 400;
+        color: #5C5C5C;
+        cursor: pointer;
+        
+        &.active {
+            color: $active-link-color;
+        }
+        
+        &:hover {
+            color: $hover-link-color;
+        }
+    }
+}

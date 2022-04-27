@@ -1,0 +1,95 @@
+$default-font-family: Roboto,
+sans-serif;
+$active-link-color: #3e7af1;
+$hover-link-color: #739df1;
+
+.list-container {
+    &__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 80px;
+    }
+
+    &__title {
+        font-family: $default-font-family;
+        font-weight: 700;
+        font-size: 27px;
+        line-height: 32px;
+        text-transform: uppercase;
+        color: #4e4e4e;
+    }
+
+    &__btn {
+        &--undo-redo {
+            margin: 0 18px;
+            font-family: $default-font-family;
+            font-weight: 400;
+            color: #5C5C5C;
+            cursor: pointer;
+
+            &.active {
+                color: $active-link-color;
+            }
+
+            &:hover:not(:disabled) {
+                color: $hover-link-color;
+            }
+            
+            &:disabled {
+                color: #7f7e7e;
+            }
+        }
+
+        &--open-modal {
+            text-align: center;
+            font-family: Roboto,
+                sans-serif;
+            padding: 12px;
+            background-color: #79A5FA;
+            width: fit-content;
+            border-radius: 10px;
+            cursor: pointer;
+            color: white;
+            margin-top: 18px;
+            float: right;
+
+            &:hover {
+                background-color: #adc6f7;
+            }
+        }
+    }
+
+    &__body {
+        .empty-state-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+
+            &__title {
+                font-family: $default-font-family;
+                font-weight: 400;
+                font-size: 24px;
+                line-height: 28px;
+                color: #5C5C5C;
+                text-align: center;
+            }
+
+            &__btn {
+                text-align: center;
+                font-family: $default-font-family;
+                padding: 12px;
+                background-color: #79A5FA;
+                width: fit-content;
+                border-radius: 10px;
+                color: white;
+                cursor: pointer;
+
+                &:hover {
+                    background-color: #adc6f7;
+                }
+            }
+        }
+    }
+}

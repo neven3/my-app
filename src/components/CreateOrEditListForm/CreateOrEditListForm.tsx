@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { TodoList } from '../../pages/Home/Home';
 import { TextInput } from '../Inputs';
 
+import './CreateOrEditListForm.scss';
 
 interface ICreateOrEditListFormProps {
     onSubmit: (value: TodoList) => void;
@@ -30,7 +31,7 @@ const CreateOrEditListForm: React.FC<ICreateOrEditListFormProps> = ({ onSubmit, 
     };
 
     return (
-        <form onSubmit={handleFormSubmit}>
+        <form onSubmit={handleFormSubmit} className="form">
             <TextInput
                 label="List name"
                 id="todo-list-name"
@@ -38,7 +39,7 @@ const CreateOrEditListForm: React.FC<ICreateOrEditListFormProps> = ({ onSubmit, 
                 value={inputText}
                 placeholder="Enter name here"
             />
-            <button type="submit">Create list</button>
+            <button className="form__submit-btn" type="submit">Save list</button>
         </form>
     );
 };

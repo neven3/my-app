@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom';
 
 import Button from '../Button';
 
+import './TodoList.scss';
+
 import { TodoList as TTodoList } from '../../pages/Home/Home';
 import { allItemsAreDone, getDoneRatio } from '../../utils/getTodoListDoneStatus';
 
@@ -28,21 +30,32 @@ const TodoList: React.FC<ITodoListProps> = ({
 
     return (
         <li
-            style={{ marginBottom: '10px' }}
             onFocus={onFocus}
             tabIndex={0}
+            className="todo-item--lists"
         >
-            <Link to={`/list/${list.id}`} style={{ margin: '10px' }}>
+            <Link className="todo-item__link" to={`/list/${list.id}`}>
                 {list.name}
             </Link>
-            <span style={{ margin: '10px' }}>{doneStatusText}</span>
-            <Button text="Edit" onClick={onEditBtnClick} />
-            <Button
-                renderCondition={list.items.length > 0}
-                text={`Mark all as ${allItemsAreDone(list) ? 'not' : ''} done`} 
-                onClick={onToggleDoneBtnClick}
-            />
-            <Button text="Delete" onClick={onDeleteBtnClick} />
+            <span className="todo-item__text">{doneStatusText}</span>
+            <span className="todo-item__btn-group">
+                <Button
+                    className="todo-item__btn"
+                    text="Edit"
+                    onClick={onEditBtnClick}
+                />
+                <Button
+                    renderCondition={list.items.length > 0}
+                    text={`Mark all as ${allItemsAreDone(list) ? 'not' : ''} done`}
+                    className="todo-item__btn"
+                    onClick={onToggleDoneBtnClick}
+                />
+                <Button
+                    text="Delete"
+                    onClick={onDeleteBtnClick}
+                    className="todo-item__btn"
+                />
+            </span>
         </li>
     );
 };

@@ -3,6 +3,7 @@ import React, { MouseEventHandler } from 'react';
 interface IButtonProps {
     text: string;
     onClick: MouseEventHandler<HTMLButtonElement>;
+    className?: string;
     renderCondition?: boolean;
     disabled?: boolean;
 }
@@ -10,13 +11,18 @@ interface IButtonProps {
 const Button: React.FC<IButtonProps> = ({
     text,
     onClick,
+    className = '',
     disabled = false,
     renderCondition = true
 }) => {
     if (!renderCondition) return null;
 
     return (
-        <button disabled={disabled} onClick={onClick}>
+        <button
+            className={className}
+            disabled={disabled}
+            onClick={onClick}
+        >
             {text}
         </button>
     );

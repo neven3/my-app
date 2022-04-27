@@ -19,6 +19,8 @@ import {
 } from '../../utils/Stack';
 import { TodoItem, TodoList } from '../Home/Home';
 
+import './List.scss';
+
 const List: React.FC = () => {
     const [todoList, setTodoList] = useState<TodoList | null>(null);
     const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
@@ -241,48 +243,73 @@ const List: React.FC = () => {
 
     return (
         <Layout>
-            <h1>List: {todoList?.name}</h1>
-            <Button
-                text="Undo"
-                disabled={undoRedo.current.undoStack.isEmpty}
-                onClick={undo}
-            />
-            <Button
-                text="Redo"
-                disabled={shouldDisplayRedo}
-                onClick={redo}
-            />
-            <ul>
-                {todoList?.items.length ? (
-                    todoList.items.map((item, index) => (
-                        <ListItem
-                            key={item.id}
-                            item={item}
-                            onFocus={() => setFocusedItemIndex(index)}
-                            onDeleteBtnClick={() => deleteItem(item, index)}
-                            onEditBtnClick={() => handleEditBtnClick(index)}
-                            onToggleDoneBtnClick={() => saveEditedItem({ ...item, isDone: !item.isDone}, index)}
+            <div className="list-container">
+                <div className="list-container__header">
+                    <h2 className="list-container__title">List: {todoList?.name}</h2>
+                    <div className="btn-group">
+                        <Button
+                            text="Undo"
+                            className="list-container__btn--undo-redo"
+                            disabled={undoRedo.current.undoStack.isEmpty}
+                            onClick={undo}
                         />
-                    ))
-                ) : (
-                    <h2>No items yet...</h2>
-                )}
-            </ul>
-            <button onClick={openModal}>Create new</button>
+                        <Button
+                            className="list-container__btn--undo-redo"
+                            text="Redo"
+                            disabled={shouldDisplayRedo}
+                            onClick={redo}
+                        />
+                    </div>
+                </div>
+                <div className="list-container__body">
+                    <ul>
+                        {todoList?.items.length ? (
+                            todoList.items.map((item, index) => (
+                                <ListItem
+                                    key={item.id}
+                                    item={item}
+                                    onFocus={() => setFocusedItemIndex(index)}
+                                    onDeleteBtnClick={() => deleteItem(item, index)}
+                                    onEditBtnClick={() => handleEditBtnClick(index)}
+                                    onToggleDoneBtnClick={() => saveEditedItem({ ...item, isDone: !item.isDone}, index)}
+                                />
+                            ))
+                        ) : (
+                            <div className="empty-state-container">
+                                <h3 className="empty-state-container__title">
+                                    Add an item to get started
+                                </h3>
+                                <button
+                                    className="empty-state-container__btn"
+                                    onClick={openModal}
+                                >
+                                    Create new
+                                </button>
+                            </div>
+                        )}
+                    </ul>
+                </div>
+            </div>
+            {Boolean(todoList?.items.length) && (
+                <button
+                    className="list-container__btn--open-modal"
+                    onClick={openModal}
+                >
+                    Create new
+                </button>
+            )}
             <Modal
                 isOpen={modalIsOpen}
                 close={closeModal}
             >
-                {
-                    itemToEditIndex.current !== null ? (
-                        <CreateOrEditItemForm
-                            onSubmit={saveEditedItem}
-                            itemToEdit={todoList?.items[itemToEditIndex.current]}
-                        />
-                    ) : (
-                        <CreateOrEditItemForm onSubmit={createNewItem} />
-                    )
-                }
+                {itemToEditIndex.current !== null ? (
+                    <CreateOrEditItemForm
+                        onSubmit={saveEditedItem}
+                        itemToEdit={todoList?.items[itemToEditIndex.current]}
+                    />
+                ) : (
+                    <CreateOrEditItemForm onSubmit={createNewItem} />
+                )}
             </Modal>
         </Layout>
     );

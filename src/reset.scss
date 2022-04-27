@@ -1,39 +1,104 @@
-/*** The new CSS Reset - version 1.2.0 (last updated 23.7.2021) ***/
-// from https: //css-tricks.com/an-interview-with-elad-shechter-on-the-new-css-reset/
+// To item 9 from: https: //www.joshwcomeau.com/css/custom-css-reset/
 
-/* Remove all the styles of the "User-Agent-Stylesheet", except for the 'display' property */
-*:where(:not(iframe, canvas, img, svg, video):not(svg *)) {
-    all: unset;
-    display: revert;
-}
-
-/* Preferred box-sizing value */
+/*
+  1. Use a more-intuitive box-sizing model.
+*/
 *,
 *::before,
 *::after {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 /*
-  Remove list styles (bullets/numbers)
-  in case you use it with normalize.css
+  2. Remove default margin
 */
-ol,
-ul {
-    list-style: none;
+* {
+    margin: 0;
 }
 
-/* For images to not be able to exceed their container */
-img {
-    max-width: 100%;
+/*
+  3. Allow percentage-based heights in the application
+*/
+html,
+body {
+  height: 100%;
 }
 
-/* Removes spacing between cells in tables */
-table {
-    border-collapse: collapse;
+/*
+  Typographic tweaks!
+  4. Add accessible line-height
+  5. Improve text rendering
+*/
+body {
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Revert the 'white-space' property for textarea elements on Safari */
-textarea {
-    white-space: revert;
+/*
+  6. Improve media defaults
+*/
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+/*
+  7. Remove built-in form typography styles
+*/
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+/*
+  8. Avoid text overflows
+*/
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  overflow-wrap: break-word;
+}
+
+/*
+  9. Create a root stacking context
+*/
+#root,
+#__next {
+  isolation: isolate;
+}
+
+/* 
+  10. Buttons
+*/
+button {
+  border: none;
+  background: transparent;
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+}
+
+/* 
+  11. Inputs
+*/
+input {
+  border: none;
+}
+
+/*
+  12. List items
+*/
+li {
+  list-style: none;
 }
