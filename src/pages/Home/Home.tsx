@@ -9,23 +9,10 @@ import useKeyboardPress from '../../hooks/useKeyboardPress';
 import getStackId from '../../utils/localStorageStackId';
 
 import { allItemsAreDone } from '../../utils/getTodoListDoneStatus';
-import { Action, EActions, EditAction, TReceiver, UndoRedo } from '../../utils/Stack';
+import { TReceiver, UndoRedo } from '../../utils/Stack';
+import { Action, EActions, EditAction, TodoList } from '../../types';
 
 import './Home.scss';
-
-// todo: define these in separate types folder
-export type TodoList = {
-    name: string;
-    items: TodoItem[];
-    id: string;
-};
-
-export type TodoItem = {
-    name: string;
-    isDone: boolean;
-    id: string;
-    dueDate?: string;
-};
 
 enum StackName {
     undo = 'todoListsUndoStack',
@@ -65,7 +52,6 @@ const Home: React.FC = () => {
     };
 
     const handleEditBtnClick = (listIndex: number) => {
-        // todo: hook 1, extract this into a separate hook (also search for hook 2)
         listToEditIndex.current = listIndex;
         openModal();
     };
@@ -208,14 +194,12 @@ const Home: React.FC = () => {
 
     useEffect(() => {
         if (!modalIsOpen) {
-            // todo: hook2 extract this into the same hook as hook 1 (e.g. useEditModal)
             if (typeof listToEditIndex.current === 'number' ) {
                 listToEditIndex.current = null;
             }
         }
     }, [modalIsOpen]);
 
-    // extract this into separate hook (e.g. useInitialLoad)
     useEffect(() => {
         if (isInitialLoad.current) {
             isInitialLoad.current = false;

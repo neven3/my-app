@@ -11,13 +11,10 @@ import useKeyboardPress from '../../hooks/useKeyboardPress';
 import getStackId from '../../utils/localStorageStackId';
 
 import {
-    Action,
-    EActions,
-    EditAction,
     TReceiver,
     UndoRedo,
 } from '../../utils/Stack';
-import { TodoItem, TodoList } from '../Home/Home';
+import { Action, EActions, EditAction, TodoItem, TodoList } from '../../types';
 
 import './List.scss';
 
@@ -89,7 +86,6 @@ const List: React.FC = () => {
     };
 
     const handleEditBtnClick = (itemIndex: number) => {
-        // todo: hook 1, extract this into a separate hook (also search for hook 2)
         itemToEditIndex.current = itemIndex;
         openModal();
     };
@@ -220,7 +216,6 @@ const List: React.FC = () => {
 
     useEffect(() => {
         if (!modalIsOpen) {
-            // todo: hook2 extract this into the same hook as hook 1
             if (typeof itemToEditIndex.current === 'number' ) {
                 itemToEditIndex.current = null;
             }

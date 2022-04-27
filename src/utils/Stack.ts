@@ -1,31 +1,4 @@
-import { TodoItem, TodoList } from '../pages/Home/Home';
-
-export enum EActions {
-    Add = 'add',
-    Remove = 'remove',
-    Edit = 'edit',
-}
-
-type AddAction = {
-    type: EActions.Add;
-    index: number;
-    value: TodoItem | TodoList;
-};
-
-export type DeleteAction = {
-    type: EActions.Remove;
-    index: number;
-    value: TodoItem | TodoList;
-};
-
-export type EditAction = {
-    type: EActions.Edit;
-    value: TodoItem | TodoList;
-    previousValue: TodoItem | TodoList;
-    index: number;
-};
-
-export type Action = AddAction | DeleteAction | EditAction;
+import { Action, EActions } from '../types';
 
 class Stack {
     public instance: Action[];
@@ -49,8 +22,6 @@ class Stack {
     public peek() {
         return this.instance.at(-1);
     }
-
-
 }
 
 abstract class Command {

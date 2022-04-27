@@ -3,7 +3,7 @@ import React, { FocusEventHandler, MouseEventHandler} from 'react';
 import Button from '../Button';
 import readableDateTime from '../../utils/readableDateTime';
 
-import { TodoItem } from '../../pages/Home/Home';
+import { TodoItem } from '../../types';
 
 import './ListItem.scss';
 

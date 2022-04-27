@@ -1,4 +1,4 @@
-import { TodoList } from '../pages/Home/Home';
+import { TodoList } from '../types';
 
 export const getDoneRatio = (list: TodoList) => {
     const doneItemsCount = list.items.filter((item) => item.isDone).length;

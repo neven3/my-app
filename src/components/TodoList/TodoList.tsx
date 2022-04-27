@@ -6,7 +6,7 @@ import Button from '../Button';
 
 import './TodoList.scss';
 
-import { TodoList as TTodoList } from '../../pages/Home/Home';
+import { TodoList as TTodoList } from '../../types';
 import { allItemsAreDone, getDoneRatio } from '../../utils/getTodoListDoneStatus';
 
 interface ITodoListProps {

@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import getDateAndTime from '../../utils/getCurrentDateAndTime';
 
-import { TodoItem } from '../../pages/Home/Home';
+import { TodoItem } from '../../types';
 import { Checkbox, DateTimePicker, TextInput } from '../Inputs';
 
 import './CreateOrEditItemForm.scss';

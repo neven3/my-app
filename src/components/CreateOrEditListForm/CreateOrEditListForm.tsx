@@ -2,7 +2,7 @@ import React, { FormEventHandler, useState } from 'react';
 
 import { v4 as uuidv4 } from 'uuid';
 
-import { TodoList } from '../../pages/Home/Home';
+import { TodoList } from '../../types';
 import { TextInput } from '../Inputs';
 
 import './CreateOrEditListForm.scss';
